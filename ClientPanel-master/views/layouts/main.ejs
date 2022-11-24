@@ -1,0 +1,285 @@
+<!doctype html>
+<html>
+
+<head>
+    <script src="dmxAppConnect/dmxAppConnect.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" crossorigin="anonymous" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.25.1/moment.min.js"></script>
+    <script src="socket.io/socket.io.js" defer></script>
+
+    <link rel="stylesheet" href="dmxAppConnect/dmxAutocomplete/dmxAutocomplete.css" />
+
+
+
+    <script src="dmxAppConnect/dmxAutocomplete/dmxAutocomplete.js" defer=""></script>
+
+    <!-- <script src="socket.io/socket.io.js" defer=""></script> -->
+
+    <script src="dmxAppConnect/dmxDatastore/dmxDatastore.js" defer=""></script>
+
+    <link rel="stylesheet" href="dmxAppConnect/dmxDatePicker/daterangepicker.min.css" />
+
+    <script src="dmxAppConnect/dmxDatePicker/daterangepicker.min.js" defer=""></script>
+
+    <link rel="stylesheet" href="dmxAppConnect/dmxDatePicker/dmxDatePicker.css" />
+
+    <script src="dmxAppConnect/dmxDatePicker/dmxDatePicker.js" defer=""></script>
+
+
+
+    <script src="dmxAppConnect/dmxSockets/dmxSockets.js" defer=""></script>
+
+
+
+    <script src="dmxAppConnect/dmxBootstrap5Modal/dmxBootstrap5Modal.js" defer=""></script>
+
+
+
+    <script src="dmxAppConnect/dmxBootstrap5PagingGenerator/dmxBootstrap5PagingGenerator.js" defer=""></script>
+
+
+
+
+
+
+
+
+    <link rel="stylesheet" href="dmxAppConnect/dmxBootstrap5TableGenerator/dmxBootstrap5TableGenerator.css" />
+
+
+
+    <script src="dmxAppConnect/dmxDataTraversal/dmxDataTraversal.js" defer=""></script>
+
+
+
+    <script src="dmxAppConnect/dmxStateManagement/dmxStateManagement.js" defer=""></script>
+
+
+
+    <script src="dmxAppConnect/dmxFormatter/dmxFormatter.js" defer=""></script>
+
+    <link rel="stylesheet" href="dmxAppConnect/dmxValidator/dmxValidator.css" />
+
+
+
+    <script src="dmxAppConnect/dmxValidator/dmxValidator.js" defer=""></script>
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.14.0/css/all.css" integrity="sha384-HzLeBuhoNPvSl5KYnjx0BT+WB0QEEqLprO+NBkkk5gbc67FTaL7XIGa2w1L0Xbgc" crossorigin="anonymous" />
+
+    <link rel="stylesheet" href="bootstrap/5/css/bootstrap.min.css" />
+
+
+
+    <script src="dmxAppConnect/dmxRouting/dmxRouting.js" defer=""></script>
+
+    <script src="dmxAppConnect/dmxBootstrap5Navigation/dmxBootstrap5Navigation.js" defer=""></script>
+
+    <script src="dmxAppConnect/dmxBrowser/dmxBrowser.js" defer=""></script>
+
+    <link rel="stylesheet" href="dmxAppConnect/dmxNotifications/dmxNotifications.css" />
+
+    <script src="dmxAppConnect/dmxNotifications/dmxNotifications.js" defer=""></script>
+
+    <base href="/">
+
+    <dmx-serverconnect id="scLogout" url="api/Users/logout" noload dmx-on:success="browserMain.goto('login')"></dmx-serverconnect>
+    <dmx-datetime id="varDateTime"></dmx-datetime>
+    <dmx-datetime id="dateNow" interval="days"></dmx-datetime>
+    <meta charset="UTF-8">
+    <title>SW Pay</title>
+    <link rel="icon" href="assets/images/swpay.png" type="image/ico" />
+    <dmx-serverconnect id="scLoginUser" url="api/Users/userinfo" dmx-on:unauthorized="browserMain.goto('/login')" dmx-on:forbidden="browserMain.goto('/login')" dmx-on:error="browserMain.goto('/login')"></dmx-serverconnect>
+    <!-- Custom Links Starts-->
+    <link href="css/custom_styles.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css" rel="stylesheet" crossorigin="anonymous" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/js/all.min.js" crossorigin="anonymous"></script>
+    <!-- Custom Links Ends -->
+    <link rel="stylesheet" href="css/style.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+</head>
+
+<body is="dmx-app" id="main" class="sb-nav-fixed">
+    <div is="dmx-browser" id="browserMain">
+    </div>
+    <dmx-notifications id="scNotif" newest-on-top="true" timeout="10000" position="bottom"></dmx-notifications>
+    <div is="dmx-view" id="content">
+
+        <nav class="sb-topnav navbar navbar-expand navbar-dark" dmx-class:bg-success="scLoginUser.data.LoginUserInfo.user_type == 5" dmx-class:bg-primary="scLoginUser.data.LoginUserInfo.user_type == 3" dmx-class:bg-warning="scLoginUser.data.LoginUserInfo.user_type == 2" dmx-class:bg-danger="scLoginUser.data.LoginUserInfo.user_type == 1">
+            <a class="navbar-brand" href="dashboard">SW Pay</a>
+            <button class="btn btn-link btn-sm order-1 order-lg-0" id="sidebarToggle" href="#"><i class="fas fa-bars"></i></button>
+
+
+            <!-- Navbar Search-->
+            <form class="d-none d-md-inline-block form-inline ml-auto mr-0 mr-md-3 my-2 my-md-0">
+                <div class="input-group">
+                    <input class="form-control" type="text" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2" />
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" type="button"><i class="fas fa-search"></i></button>
+                    </div>
+                </div>
+            </form>
+            <span class="text-light">M: &nbsp;&nbsp;{{scLoginUser.data.LoginUserInfo.balance_amt.toNumber().formatCurrency('₹', '.', ',', 2)}}
+            </span>&emsp;
+            <span class="text-light" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 3">A: &nbsp;&nbsp;{{scLoginUser.data.LoginUserInfo.aeps_balance.toNumber().formatCurrency('₹', '.', ',', 2)}}
+            </span>
+            <!-- Navbar-->
+            <ul class="navbar-nav ml-auto ml-md-0">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="userDropdown" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" dmx-show="scLoginUser.data.LoginUserInfo.profile_pic==null||scLoginUser.data.LoginUserInfo.profile_pic==' '"><i class="fas fa-user fa-fw"></i></a>
+                    <a class="nav-link dropdown-toggle" id="usersDropdown" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" dmx-show="scLoginUser.data.LoginUserInfo.profile_pic"><img dmx-bind:src="scLoginUser.data.LoginUserInfo.profile_pic" width="20" height="20"></a>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                        <a class="dropdown-item" href="my-profile">Profile</a><a class="dropdown-item" href="security-update">Security Update</a>
+                        <a class="dropdown-item" href="login-history">Activity Log</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#" dmx-on:click="scLogout.load()">Logout</a>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+        <div id="layoutSidenav">
+            <div id="layoutSidenav_nav">
+                <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                    <div class="sb-sidenav-menu">
+                        <div class="nav">
+                            <div class="sb-sidenav-menu-heading">User Info</div>
+                            <div class="text-light py-1 ml-3">Logged in as: ( {{scLoginUser.data.LoginUserInfo.type_name}} )</div>
+                            <div class="text-light py-1 ml-3">User Id: {{scLoginUser.data.LoginUserInfo.id}}</div>
+                            <div class="text-light py-1 ml-3">{{scLoginUser.data.LoginUserInfo.user_fname}}</div>
+                            <div class="text-light py-1 ml-3">{{scLoginUser.data.LoginUserInfo.user_mobile}}</div>
+                            <div class="sb-sidenav-menu-heading">Features</div>
+                            <a class="nav-link" href="dashboard">
+                                <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                                Dashboard
+                            </a>
+                            <a class="nav-link" href="/api-token" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 5">
+                                <div class="sb-nav-link-icon"><i class="fas fa-tram"></i></div>
+                                API Token
+                            </a>
+                            <a class="nav-link" href="assets/Recharge%20and%20BBPS%20API%20SWPAY.pdf" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 5" target="_blank">
+                                <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
+                                API Doc.
+                            </a>
+                            <a class="nav-link" href="/recharge" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 3 && scLoginUser.data.ActiveServices.data[0].status==1">
+                                <div class="sb-nav-link-icon"><i class="fas fa-mobile-alt"></i></div>
+                                Recharge
+                            </a>
+                            <a class="nav-link" href="/upi-txn-wallet" dmx-show="scLoginUser.data.ActiveServices.data[5].status == 1">
+                                <div class="sb-nav-link-icon"><i class="fas fa-qrcode"></i></div>
+                                UPI Add Money
+                            </a>
+                            <a class="nav-link" href="/add-money-wallet" dmx-show="scLoginUser.data.ActiveServices.data[8].status == 1">
+                                <div class="sb-nav-link-icon"><i class="fas fa-qrcode"></i></div>
+                                Credit/Debit Card Add Money
+                            </a>
+                            <a class="nav-link" href="/bbps-services" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 3 && scLoginUser.data.ActiveServices.data[1].status==1">
+                                <div class="sb-nav-link-icon"><i class="fab fa-hornbill"></i></div>
+                                BBPS
+                            </a>
+                            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseAEPS" aria-expanded="false" aria-controls="collapseAEPS" dmx-show="scLoginUser.data.ActiveServices.data[2].status == 1 && scLoginUser.data.LoginUserInfo.user_type != 5">
+                                <div class="sb-nav-link-icon"><i class="fas fa-angle-double-right"></i></div>
+                                AEPS
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseAEPS" aria-labelledby="headingOne" data-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    <a class="nav-link" href="/AEPS_User" dmx-show="scLoginUser.data.LoginUserInfo.user_mobile == '6396090835'">AEPS Admin Access</a>
+                                    <a class="nav-link" href="/AEPS" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 3 && scLoginUser.data.ActiveServices.data[2].status == 1" target="_blank">AEPS Transaction</a>
+                                    <a class="nav-link" href="/AEPS-Fund-Transfer">AEPS Fund Transfer</a>
+                                </nav>
+                            </div>
+                            <!-- DMT Service -->
+                            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseDMT" aria-expanded="false" aria-controls="collapseDMT" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 3 && scLoginUser.data.ActiveServices.data[3].status == 1">
+                                <div class="sb-nav-link-icon"><i class="fas fa-money-check"></i></div>
+                                Money Transfer
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseDMT" aria-labelledby="headingOne" data-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    <a class="nav-link" href="/dmt-service" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 3 && scLoginUser.data.ActiveDMTApi.api_code == 'VFDMT' ">DMT</a>
+                                    <a class="nav-link" href="/dmt-service-beta" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 3 && scLoginUser.data.ActiveDMTApi.api_code == 'DMEP' ">DMT Alpha</a><a class="nav-link" href="/dmt-service-cf" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 3 && scLoginUser.data.ActiveDMTApi.api_code == 'CFDMT' ">DMT</a>
+                                </nav>
+                            </div>
+                            <!-- Reports -->
+                            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+                                <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
+                                Reports
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    <a class="nav-link" href="search-transactions" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 3 || scLoginUser.data.LoginUserInfo.user_type == 4 || scLoginUser.data.LoginUserInfo.user_type == 5">Transaction Search</a>
+                                    <a class="nav-link" href="statement">AC Statement</a>
+                                    <a class="nav-link" href="recharge-history" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 3 || scLoginUser.data.LoginUserInfo.user_type == 5">Transaction Report</a>
+                                    <a class="nav-link" href="transaction-commision" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 1 || scLoginUser.data.LoginUserInfo.user_type == 2">Transaction Report</a>
+                                    <a class="nav-link" href="sales-report" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 1 || scLoginUser.data.LoginUserInfo.user_type == 2">Downline Sales Report</a>
+                                    <a class="nav-link" href="complain-status">Complain Status</a><a class="nav-link" href="complain-other" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 1 || scLoginUser.data.LoginUserInfo.user_type == 2">Other Complaint</a><a class="nav-link" href="operatorwise-comm">Operatorwise Earning Report</a><a class="nav-link" href="paymet-load">Payment Load Report</a>
+                                    <a class="nav-link" href="payment-debit" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 1 || scLoginUser.data.LoginUserInfo.user_type == 2">Payment Debit Report</a>
+                                    <a class="nav-link" href="AEPS-settlement-report" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 1 || scLoginUser.data.LoginUserInfo.user_type == 2">AEPS Settlement Report</a>
+                                    <a class="nav-link" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 1 || scLoginUser.data.LoginUserInfo.user_type == 2" href="AEPS-Commision-Report">AEPS Commision Report</a>
+                                </nav>
+                            </div>
+                            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUsers" aria-expanded="false" aria-controls="collapseUsers" dmx-hide="scLoginUser.data.LoginUserInfo.user_type == 3 || scLoginUser.data.LoginUserInfo.user_type == 5">
+                                <div class="sb-nav-link-icon"><i class="fas fa-people-arrows"></i></div>
+                                Manage
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapseUsers" aria-labelledby="headingOne" data-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    <a class="nav-link" href="users">Users</a><a class="nav-link" href="credits" dmx-show="scLoginUser.data.ActiveServices.data[4].status==1">Credit</a><a class="nav-link" href="manage-pay-request" dmx-show="scLoginUser.data.LoginUserInfo.user_type != 3">Request Response</a>
+                                </nav>
+                            </div>
+                            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
+                                <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
+                                Account
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages"><a class="nav-link" href="payment-request">My Payment Request</a><a class="nav-link" href="certificate">Certificate</a><a class="nav-link" href="commision">Commision</a><a class="nav-link" href="complain-raise" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 3">Raise Complain</a>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                    <!--div class="sb-sidenav-footer">
+                        <div class="small">Logged in as:</div>
+                        Ariful (Retailer)
+                    </div-->
+                </nav>
+            </div>
+            <div id="layoutSidenav_content">
+
+
+                <%- await include(content, locals); %>
+
+
+                    <footer class="py-4 bg-light mt-auto">
+                        <div class="container-fluid">
+                            <div class="d-flex align-items-center justify-content-between small">
+                                <div class="text-muted">Copyright &copy; SWPAY.IN 2022</div>
+                                <div>
+                                    <a href="#">Privacy Policy</a>
+                                    &middot;
+                                    <a href="#">Terms &amp; Conditions</a>
+                                </div>
+                            </div>
+                        </div>
+                    </footer>
+            </div>
+        </div>
+
+    </div>
+    <!-- <script src="bootstrap/5/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script> -->
+    <!-- Custom Scripts Starts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="assets/demo/scripts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+    <script src="assets/demo/chart-area-demo.js"></script>
+    <script src="assets/demo/chart-bar-demo.js"></script>
+    <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js" crossorigin="anonymous"></script>
+    <script src="assets/demo/datatables-demo.js"></script>
+    <!-- Custom Scripts Ends -->
+</body>
+
+</html>

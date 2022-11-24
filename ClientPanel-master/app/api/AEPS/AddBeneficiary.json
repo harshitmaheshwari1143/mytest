@@ -1,0 +1,626 @@
+{
+  "meta": {
+    "options": {
+      "linkedFile": "/views/AEPS-Fund-Transfer.ejs",
+      "linkedForm": "formAddBen"
+    },
+    "$_POST": [
+      {
+        "type": "text",
+        "fieldName": "UserName",
+        "options": {
+          "rules": {
+            "core:required": {
+              "param": ""
+            }
+          }
+        },
+        "name": "UserName"
+      },
+      {
+        "type": "number",
+        "fieldName": "BankAC",
+        "options": {
+          "rules": {
+            "core:required": {
+              "param": ""
+            },
+            "core:number": {}
+          }
+        },
+        "name": "BankAC"
+      },
+      {
+        "type": "text",
+        "fieldName": "BankIFSC",
+        "options": {
+          "rules": {
+            "core:required": {
+              "param": ""
+            },
+            "core:maxlength": {
+              "param": "20"
+            }
+          }
+        },
+        "name": "BankIFSC"
+      },
+      {
+        "type": "text",
+        "fieldName": "Address",
+        "options": {
+          "rules": {
+            "core:required": {
+              "param": ""
+            },
+            "core:maxlength": {
+              "param": "200"
+            }
+          }
+        },
+        "name": "Address"
+      },
+      {
+        "type": "text",
+        "fieldName": "AreaPIN",
+        "options": {
+          "rules": {
+            "core:required": {
+              "param": ""
+            },
+            "core:maxlength": {
+              "param": "6"
+            }
+          }
+        },
+        "name": "AreaPIN"
+      },
+      {
+        "type": "text",
+        "fieldName": "BankName",
+        "options": {
+          "rules": {
+            "core:required": {
+              "param": ""
+            }
+          }
+        },
+        "name": "BankName"
+      }
+    ],
+    "$_SERVER": [
+      {
+        "type": "text",
+        "name": "REMOTE_ADDR"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "",
+        "module": "auth",
+        "action": "restrict",
+        "options": {
+          "provider": "security",
+          "permissions": [
+            "write"
+          ],
+          "loginUrl": "/login",
+          "forbiddenUrl": "/403-forbidden"
+        }
+      },
+      {
+        "name": "identity",
+        "module": "auth",
+        "action": "identify",
+        "options": {
+          "provider": "security"
+        },
+        "output": false,
+        "meta": []
+      },
+      {
+        "name": "CountNo",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "postgres_gcpServer",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "aeps_beneficiary_cashfree",
+                "column": "id",
+                "alias": "CountId",
+                "aggregate": "COUNT"
+              }
+            ],
+            "table": {
+              "name": "aeps_beneficiary_cashfree"
+            },
+            "joins": [],
+            "primary": "id",
+            "query": "SELECT COUNT(id) AS CountId\nFROM aeps_beneficiary_cashfree\nWHERE parent_id = :P1 /* {{identity}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{identity}}"
+              }
+            ],
+            "groupBy": [],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "aeps_beneficiary_cashfree.parent_id",
+                  "field": "aeps_beneficiary_cashfree.parent_id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{identity}}",
+                  "data": {
+                    "table": "aeps_beneficiary_cashfree",
+                    "column": "parent_id",
+                    "type": "number",
+                    "columnObj": {
+                      "type": "integer",
+                      "primary": false,
+                      "unique": false,
+                      "nullable": true,
+                      "name": "parent_id"
+                    }
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            }
+          }
+        },
+        "output": false,
+        "meta": [
+          {
+            "type": "number",
+            "name": "CountId"
+          }
+        ],
+        "outputType": "object"
+      },
+      {
+        "name": "GetMobile",
+        "module": "dbconnector",
+        "action": "single",
+        "options": {
+          "connection": "postgres_gcpServer",
+          "sql": {
+            "type": "SELECT",
+            "columns": [
+              {
+                "table": "m_users",
+                "column": "aeps_merchant_id"
+              },
+              {
+                "table": "m_users",
+                "column": "user_fname"
+              },
+              {
+                "table": "m_users",
+                "column": "user_mobile"
+              }
+            ],
+            "table": {
+              "name": "m_users"
+            },
+            "joins": [],
+            "primary": "id",
+            "query": "SELECT aeps_merchant_id, user_fname, user_mobile\nFROM m_users\nWHERE id = :P1 /* {{identity}} */",
+            "params": [
+              {
+                "operator": "equal",
+                "type": "expression",
+                "name": ":P1",
+                "value": "{{identity}}"
+              }
+            ],
+            "wheres": {
+              "condition": "AND",
+              "rules": [
+                {
+                  "id": "m_users.id",
+                  "field": "m_users.id",
+                  "type": "double",
+                  "operator": "equal",
+                  "value": "{{identity}}",
+                  "data": {
+                    "table": "m_users",
+                    "column": "id",
+                    "type": "number",
+                    "columnObj": {
+                      "type": "increments",
+                      "default": "",
+                      "primary": true,
+                      "nullable": false,
+                      "unique": true,
+                      "name": "id"
+                    }
+                  },
+                  "operation": "="
+                }
+              ],
+              "conditional": null,
+              "valid": true
+            }
+          }
+        },
+        "output": false,
+        "meta": [
+          {
+            "type": "text",
+            "name": "aeps_merchant_id"
+          },
+          {
+            "type": "text",
+            "name": "user_fname"
+          },
+          {
+            "type": "text",
+            "name": "user_mobile"
+          }
+        ],
+        "outputType": "object"
+      },
+      {
+        "name": "apiAuth",
+        "module": "api",
+        "action": "send",
+        "options": {
+          "url": "https://payout-api.cashfree.com/payout/v1/authorize",
+          "method": "POST",
+          "headers": {
+            "X-Client-Id": "{{'CF249483CBOGO8LD73N0IMAPH69G'}}",
+            "X-Client-Secret": "{{'61108264d27a79b942f341c637d04216425887b5'}}",
+            "X-Cf-Signature": ""
+          }
+        },
+        "output": false
+      },
+      {
+        "name": "",
+        "module": "core",
+        "action": "condition",
+        "options": {
+          "if": "{{apiAuth.data.status=='SUCCESS'}}",
+          "then": {
+            "steps": [
+              {
+                "name": "TrId",
+                "module": "core",
+                "action": "setvalue",
+                "options": {
+                  "value": "{{NOW.md5(123456).substr(1, 5)}}"
+                },
+                "meta": [],
+                "outputType": "text"
+              },
+              {
+                "name": "apiAddBeneficiary",
+                "module": "api",
+                "action": "send",
+                "options": {
+                  "url": "https://payout-api.cashfree.com/payout/v1/addBeneficiary",
+                  "method": "POST",
+                  "dataType": "json",
+                  "data": {
+                    "beneId": "{{TrId}}",
+                    "name": "{{$_POST.UserName}}",
+                    "email": "swinfotech2021@gmail.com",
+                    "phone": "{{GetMobile.user_mobile}}",
+                    "bankAccount": "{{$_POST.BankAC}}",
+                    "ifsc": "{{$_POST.BankIFSC}}",
+                    "address1": "{{$_POST.Address}}",
+                    "city": "",
+                    "state": "",
+                    "pincode": "{{$_POST.AreaPIN}}"
+                  },
+                  "headers": {
+                    "Authorization": "{{'Bearer '+apiAuth.data.data.token}}",
+                    "Content-Type": ""
+                  }
+                },
+                "output": false
+              },
+              {
+                "name": "Status",
+                "module": "core",
+                "action": "setvalue",
+                "options": {
+                  "value": "{{apiAddBeneficiary.data.status}}"
+                },
+                "meta": [],
+                "outputType": "text",
+                "output": true
+              },
+              {
+                "name": "Desc",
+                "module": "core",
+                "action": "setvalue",
+                "options": {
+                  "value": "{{apiAddBeneficiary.data.message}}"
+                },
+                "meta": [],
+                "outputType": "text",
+                "output": true
+              },
+              {
+                "name": "",
+                "module": "core",
+                "action": "condition",
+                "options": {
+                  "if": "{{apiAddBeneficiary.data.status=='SUCCESS'}}",
+                  "then": {
+                    "steps": [
+                      {
+                        "name": "AddBeneficiary",
+                        "module": "dbupdater",
+                        "action": "insert",
+                        "options": {
+                          "connection": "postgres_gcpServer",
+                          "sql": {
+                            "type": "insert",
+                            "values": [
+                              {
+                                "table": "aeps_beneficiary_cashfree",
+                                "column": "benef_id",
+                                "type": "text",
+                                "value": "{{TrId}}"
+                              },
+                              {
+                                "table": "aeps_beneficiary_cashfree",
+                                "column": "benef_name",
+                                "type": "text",
+                                "value": "{{$_POST.UserName}}"
+                              },
+                              {
+                                "table": "aeps_beneficiary_cashfree",
+                                "column": "benef_mobile",
+                                "type": "text",
+                                "value": "{{GetMobile.user_mobile}}"
+                              },
+                              {
+                                "table": "aeps_beneficiary_cashfree",
+                                "column": "benef_email",
+                                "type": "text",
+                                "value": "{{'swinfotech2021@gmail.com'}}"
+                              },
+                              {
+                                "table": "aeps_beneficiary_cashfree",
+                                "column": "bank_ac",
+                                "type": "text",
+                                "value": "{{$_POST.BankAC}}"
+                              },
+                              {
+                                "table": "aeps_beneficiary_cashfree",
+                                "column": "ifsc",
+                                "type": "text",
+                                "value": "{{$_POST.BankIFSC}}"
+                              },
+                              {
+                                "table": "aeps_beneficiary_cashfree",
+                                "column": "address1",
+                                "type": "text",
+                                "value": "{{$_POST.Address}}"
+                              },
+                              {
+                                "table": "aeps_beneficiary_cashfree",
+                                "column": "pincode",
+                                "type": "text",
+                                "value": "{{$_POST.AreaPIN}}"
+                              },
+                              {
+                                "table": "aeps_beneficiary_cashfree",
+                                "column": "ip",
+                                "type": "text",
+                                "value": "{{$_SERVER.REMOTE_ADDR}}"
+                              },
+                              {
+                                "table": "aeps_beneficiary_cashfree",
+                                "column": "status",
+                                "type": "number",
+                                "value": "{{1}}"
+                              },
+                              {
+                                "table": "aeps_beneficiary_cashfree",
+                                "column": "remarks",
+                                "type": "text",
+                                "value": "{{$_POST.BankName}}"
+                              },
+                              {
+                                "table": "aeps_beneficiary_cashfree",
+                                "column": "created_by",
+                                "type": "number",
+                                "value": "{{identity}}"
+                              },
+                              {
+                                "table": "aeps_beneficiary_cashfree",
+                                "column": "created_on",
+                                "type": "datetime",
+                                "value": "{{NOW}}"
+                              },
+                              {
+                                "table": "aeps_beneficiary_cashfree",
+                                "column": "parent_id",
+                                "type": "number",
+                                "value": "{{identity}}"
+                              },
+                              {
+                                "table": "aeps_beneficiary_cashfree",
+                                "column": "state",
+                                "type": "text",
+                                "value": "{{0}}"
+                              }
+                            ],
+                            "table": "aeps_beneficiary_cashfree",
+                            "returning": "id",
+                            "query": "INSERT INTO aeps_beneficiary_cashfree\n(benef_id, benef_name, benef_mobile, benef_email, bank_ac, ifsc, address1, pincode, ip, status, remarks, created_by, created_on, parent_id, state) VALUES (:P1 /* {{TrId}} */, :P2 /* {{$_POST.UserName}} */, :P3 /* {{GetMobile.user_mobile}} */, :P4 /* {{'swinfotech2021@gmail.com'}} */, :P5 /* {{$_POST.BankAC}} */, :P6 /* {{$_POST.BankIFSC}} */, :P7 /* {{$_POST.Address}} */, :P8 /* {{$_POST.AreaPIN}} */, :P9 /* {{$_SERVER.REMOTE_ADDR}} */, :P10 /* {{1}} */, :P11 /* {{$_POST.BankName}} */, :P12 /* {{identity}} */, :P13 /* {{NOW}} */, :P14 /* {{identity}} */, :P15 /* {{0}} */)",
+                            "params": [
+                              {
+                                "name": ":P1",
+                                "type": "expression",
+                                "value": "{{TrId}}"
+                              },
+                              {
+                                "name": ":P2",
+                                "type": "expression",
+                                "value": "{{$_POST.UserName}}"
+                              },
+                              {
+                                "name": ":P3",
+                                "type": "expression",
+                                "value": "{{GetMobile.user_mobile}}"
+                              },
+                              {
+                                "name": ":P4",
+                                "type": "expression",
+                                "value": "{{'swinfotech2021@gmail.com'}}"
+                              },
+                              {
+                                "name": ":P5",
+                                "type": "expression",
+                                "value": "{{$_POST.BankAC}}"
+                              },
+                              {
+                                "name": ":P6",
+                                "type": "expression",
+                                "value": "{{$_POST.BankIFSC}}"
+                              },
+                              {
+                                "name": ":P7",
+                                "type": "expression",
+                                "value": "{{$_POST.Address}}"
+                              },
+                              {
+                                "name": ":P8",
+                                "type": "expression",
+                                "value": "{{$_POST.AreaPIN}}"
+                              },
+                              {
+                                "name": ":P9",
+                                "type": "expression",
+                                "value": "{{$_SERVER.REMOTE_ADDR}}"
+                              },
+                              {
+                                "name": ":P10",
+                                "type": "expression",
+                                "value": "{{1}}"
+                              },
+                              {
+                                "name": ":P11",
+                                "type": "expression",
+                                "value": "{{$_POST.BankName}}"
+                              },
+                              {
+                                "name": ":P12",
+                                "type": "expression",
+                                "value": "{{identity}}"
+                              },
+                              {
+                                "name": ":P13",
+                                "type": "expression",
+                                "value": "{{NOW}}"
+                              },
+                              {
+                                "name": ":P14",
+                                "type": "expression",
+                                "value": "{{identity}}"
+                              },
+                              {
+                                "name": ":P15",
+                                "type": "expression",
+                                "value": "{{0}}"
+                              }
+                            ]
+                          }
+                        },
+                        "meta": [
+                          {
+                            "name": "identity",
+                            "type": "text"
+                          },
+                          {
+                            "name": "affected",
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Contact",
+                        "module": "core",
+                        "action": "setvalue",
+                        "options": {
+                          "value": "{{GetMobile.user_mobile}}"
+                        },
+                        "meta": [],
+                        "outputType": "text",
+                        "output": true
+                      },
+                      {
+                        "name": "BenefId",
+                        "module": "core",
+                        "action": "setvalue",
+                        "options": {
+                          "value": "{{TrId}}"
+                        },
+                        "meta": [],
+                        "outputType": "text",
+                        "output": true
+                      },
+                      {
+                        "name": "Resp",
+                        "module": "core",
+                        "action": "response",
+                        "options": {
+                          "status": 200,
+                          "data": "{{apiAddBeneficiary.data.message}}"
+                        },
+                        "output": true
+                      }
+                    ]
+                  },
+                  "else": {
+                    "steps": {
+                      "name": "Resp",
+                      "module": "core",
+                      "action": "response",
+                      "options": {
+                        "status": 403,
+                        "data": "{{apiBeneficiary.data.Description}}"
+                      },
+                      "output": true
+                    }
+                  }
+                },
+                "outputType": "boolean"
+              }
+            ]
+          },
+          "else": {
+            "steps": {
+              "name": "Resp",
+              "module": "core",
+              "action": "response",
+              "options": {
+                "status": 403,
+                "data": "Please contact admin for unsupported API credentials"
+              },
+              "output": true
+            }
+          }
+        },
+        "outputType": "boolean"
+      }
+    ]
+  }
+}

@@ -1,0 +1,128 @@
+<!-- Wappler include head-page="layouts/main" fontawesome_5="cdn" bootstrap5="local" is="dmx-app" id="apitoken" appConnect="local" components="{dmxDataTraversal:{},dmxAutocomplete:{},dmxBootstrap5Navigation:{},dmxBootstrap5Modal:{}}" -->
+<meta name="ac:route" content="/api-token">
+<dmx-value id="varToken" dmx-bind:value="0"></dmx-value>
+<dmx-serverconnect id="scFetchToken" url="api/UserAPI/GetAPIToken"></dmx-serverconnect>
+<div class="container">
+    <div class="row mx-0">
+        <div class="col">
+            <h1 class="mt-4">IP and API Token<span class="border-3 ms-2 spinner-border spinner-border-sm" role="status" dmx-show="scUserSchemPrio.state.executing"></span>
+            </h1>
+
+            <ol class="breadcrumb mb-4">
+                <li class="breadcrumb-item active">Generate IP</li>
+            </ol>
+        </div>
+        <div class="card px-0">
+            <div class="card-header bg-info">
+                <div class="row mx-0">
+                    <div class="col-6">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">API Token</span>
+                            </div>
+                            <input type="text" autocomplete="off" class="form-control" placeholder="token" aria-label="token" aria-describedby="basic-addon1" dmx-bind:value="content.scFetchToken.data.FetchToken.api_token" dmx-show="varToken.value==1">
+                            <input type="text" autocomplete="off" class="form-control" placeholder="token" aria-label="token" aria-describedby="basic-addon1" dmx-bind:value="content.scFetchToken.data.FetchToken.api_token" dmx-show="varToken.value==0">
+                            <div class="input-group-append">
+                                <span class="input-group-text" id="basic-addon1" dmx-show="varToken.value==1" dmx-on:click="varToken.setValue(0)"><i class="fa fa-eye"></i></span>
+                                <span class="input-group-text" id="basic-addon" dmx-show="varToken.value==0" dmx-on:click="varToken.setValue(1)"><i class="far fa-eye-slash"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Callback URL</span>
+                            </div>
+                            <input type="text" class="form-control" placeholder="https://abc.com/api" id="CallBack" dmx-bind:value="content.scFetchToken.data.FetchToken.callbackapi">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <form is="dmx-serverconnect-form" id="formAddIP" method="post" action="api/UserAPI/AddIPOTP" dmx-generator="bootstrap5" dmx-form-type="horizontal" dmx-on:success="scNotif.success('OTP Sent');modalOTPIP.show()" dmx-on:error="scNotif.warning('An error occurred');" dmx-on:forbidden="scNotif.warning(content.formAddIP.lastError.response)">
+                    <div class="row">
+                        <div class="col-12 col-md-4 p-2">
+                            <label>IP Address1</label>
+                            <input id="ip_address1" name="ip_address1" class="form-control" placeholder="E.g: 00.00.00.00" required="" type="text" dmx-bind:value="content.scFetchToken.data.FetchToken.ip_address1">
+                        </div>
+                        <div class="col-12 col-md-4 p-2">
+                            <label>IP Address2</label>
+                            <input id="ip_address2" name="ip_address2" class="form-control" placeholder="E.g: 00.00.00.00" type="text" dmx-bind:value="content.scFetchToken.data.FetchToken.ip_address2">
+                        </div>
+                        <div class="col-12 col-md-4 p-2">
+                            <label>IP Address3</label>
+                            <input id="ip_address3" name="ip_address3" class="form-control" placeholder="E.g: 00.00.00.00" type="text" dmx-bind:value="content.scFetchToken.data.FetchToken.ip_address3">
+                        </div>
+                        <div class="col-12 text-center">
+                            <button id="btn1" class="btn btn-info mt-md-4" type="submit" dmx-bind:disabled="state.executing">Submit<span class="spinner-border spinner-border-sm" role="status" dmx-show="state.executing"></span></button>
+
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="card mt-3">
+        <div class="card-header bg-primary text-light">
+            <b>Issued API Token</b>
+        </div>
+        <div class="card-body px-0">
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered table-hover table-sm">
+                    <thead>
+                        <tr>
+                            <th>API Token</th>
+                            <th>Callback API</th>
+                            <th>IP. Address1</th>
+                            <th>IP. Address2</th>
+                            <th>IP. Address3</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody dmx-generator="bs5table" id="tableRepeat1">
+                        <tr>
+                            <td dmx-text="content.scFetchToken.data.FetchToken.api_token"></td>
+                            <td dmx-text="content.scFetchToken.data.FetchToken.callbackapi"></td>
+                            <td dmx-text="content.scFetchToken.data.FetchToken.ip_address1"></td>
+                            <td dmx-text="content.scFetchToken.data.FetchToken.ip_address2"></td>
+                            <td dmx-text="content.scFetchToken.data.FetchToken.ip_address3"></td>
+                            <td class="fw-bold" dmx-text="content.scFetchToken.data.FetchToken.status == 1? 'Active' : 'Inactive'" dmx-class:text-success="content.scFetchToken.data.FetchToken.status == 1" dmx-class:text-danger="content.scFetchToken.data.FetchToken.status == 0"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal OTP Add Edit IP -->
+<div class="modal fade" id="modalOTPIP" is="dmx-bs5-modal" tabindex="-1" nokeyboard="true" nocloseonclick="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">OTP For Update IP</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" dmx-on:click="modalOTPIP.hide();"></button>
+            </div>
+            <div class="modal-body">
+                <h4 class="text-info">OTP send to registered mobile...</h4>
+                <form is="dmx-serverconnect-form" id="formOTPIP" method="post" action="api/UserAPI/AddEditIP" dmx-generator="bootstrap5" dmx-form-type="horizontal" dmx-on:success="modalOTPIP.hide();scFetchToken.load({});content.formOTPIP.data.GetIPUser.CountId == 1 ? scNotif.success('IP Updated Successfully') : scNotif.success('New IP Added Successfully');" dmx-on:error="scNotif.warning('An error occurred'); modalOTPIP.hide();formOTPIP.reset()" dmx-on:forbidden="scNotif.danger(content.modalOTPIP.formOTPIP.lastError.response)">
+                    <input type="hidden" name="callbackapi" dmx-bind:value="content.CallBack.value">
+                    <input type="hidden" name="ip_address1" dmx-bind:value="content.formAddIP.ip_address1.value">
+                    <input type="hidden" name="ip_address2" dmx-bind:value="content.formAddIP.ip_address2.value">
+                    <input type="hidden" name="ip_address3" dmx-bind:value="content.formAddIP.ip_address3.value">
+                    <div class="mb-3 row">
+                        <div class="col-12 mb-3">
+                            <input type="text" name="otp" class="form-control" placeholder="Enter OTP sent to registered mobile">
+                        </div>
+                        <div class="col-12 text-center">
+                            <button type="submit" class="btn btn-primary" dmx-bind:disabled="state.executing" data-bs-dismiss="modal">Submit<span class="spinner-border spinner-border-sm" role="status" dmx-show="state.executing"></span></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" dmx-on:click="modalOTPIP.hide();">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

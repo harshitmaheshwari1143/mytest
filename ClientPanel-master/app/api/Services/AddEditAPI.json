@@ -1,0 +1,319 @@
+{
+  "meta": {
+    "$_POST": [
+      {
+        "type": "text",
+        "options": {
+          "rules": {}
+        },
+        "name": "EditId"
+      },
+      {
+        "type": "text",
+        "options": {
+          "rules": {
+            "core:required": {}
+          }
+        },
+        "name": "Name"
+      },
+      {
+        "type": "text",
+        "options": {
+          "rules": {
+            "core:required": {}
+          }
+        },
+        "name": "Email"
+      },
+      {
+        "type": "text",
+        "options": {
+          "rules": {
+            "core:required": {}
+          }
+        },
+        "name": "Mobile"
+      },
+      {
+        "type": "text",
+        "options": {
+          "rules": {
+            "core:required": {}
+          }
+        },
+        "name": "Amount"
+      },
+      {
+        "type": "text",
+        "name": "Status"
+      }
+    ]
+  },
+  "exec": {
+    "steps": {
+      "name": "",
+      "module": "core",
+      "action": "condition",
+      "options": {
+        "if": "{{$_POST.EditId}}",
+        "then": {
+          "steps": [
+            {
+              "name": "Update",
+              "module": "dbupdater",
+              "action": "update",
+              "options": {
+                "connection": "postgres_gcpServer",
+                "sql": {
+                  "type": "update",
+                  "values": [
+                    {
+                      "table": "m_recharge_plan",
+                      "column": "plan_type",
+                      "type": "text",
+                      "value": "{{$_POST.Name}}"
+                    },
+                    {
+                      "table": "m_recharge_plan",
+                      "column": "operator_name",
+                      "type": "text",
+                      "value": "{{$_POST.Email}}"
+                    },
+                    {
+                      "table": "m_recharge_plan",
+                      "column": "mrp_op_code",
+                      "type": "text",
+                      "value": "{{$_POST.Mobile}}"
+                    },
+                    {
+                      "table": "m_recharge_plan",
+                      "column": "amount",
+                      "type": "text",
+                      "value": "{{$_POST.Amount}}"
+                    },
+                    {
+                      "table": "m_recharge_plan",
+                      "column": "status",
+                      "type": "text",
+                      "value": "{{$_POST.Status}}"
+                    },
+                    {
+                      "table": "m_recharge_plan",
+                      "column": "created_on",
+                      "type": "datetime",
+                      "value": "{{NOW}}"
+                    }
+                  ],
+                  "table": "m_recharge_plan",
+                  "wheres": {
+                    "condition": "AND",
+                    "rules": [
+                      {
+                        "id": "id",
+                        "field": "id",
+                        "type": "double",
+                        "operator": "equal",
+                        "value": "{{$_POST.EditId}}",
+                        "data": {
+                          "column": "id"
+                        },
+                        "operation": "="
+                      }
+                    ],
+                    "conditional": null,
+                    "valid": true
+                  },
+                  "returning": "id",
+                  "query": "UPDATE m_recharge_plan\nSET plan_type = :P1 /* {{$_POST.Name}} */, operator_name = :P2 /* {{$_POST.Email}} */, mrp_op_code = :P3 /* {{$_POST.Mobile}} */, amount = :P4 /* {{$_POST.Amount}} */, status = :P5 /* {{$_POST.Status}} */, created_on = :P6 /* {{NOW}} */\nWHERE id = :P7 /* {{$_POST.EditId}} */",
+                  "params": [
+                    {
+                      "name": ":P1",
+                      "type": "expression",
+                      "value": "{{$_POST.Name}}"
+                    },
+                    {
+                      "name": ":P2",
+                      "type": "expression",
+                      "value": "{{$_POST.Email}}"
+                    },
+                    {
+                      "name": ":P3",
+                      "type": "expression",
+                      "value": "{{$_POST.Mobile}}"
+                    },
+                    {
+                      "name": ":P4",
+                      "type": "expression",
+                      "value": "{{$_POST.Amount}}"
+                    },
+                    {
+                      "name": ":P5",
+                      "type": "expression",
+                      "value": "{{$_POST.Status}}"
+                    },
+                    {
+                      "name": ":P6",
+                      "type": "expression",
+                      "value": "{{NOW}}"
+                    },
+                    {
+                      "operator": "equal",
+                      "type": "expression",
+                      "name": ":P7",
+                      "value": "{{$_POST.EditId}}"
+                    }
+                  ]
+                }
+              },
+              "meta": [
+                {
+                  "name": "affected",
+                  "type": "number"
+                }
+              ]
+            },
+            {
+              "name": "Status",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": 200
+              },
+              "meta": [],
+              "output": true,
+              "outputType": "text"
+            },
+            {
+              "name": "RespMsg",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": "Record Updated Successfully"
+              },
+              "meta": [],
+              "output": true,
+              "outputType": "text"
+            }
+          ]
+        },
+        "else": {
+          "steps": [
+            {
+              "name": "Add",
+              "module": "dbupdater",
+              "action": "insert",
+              "options": {
+                "connection": "postgres_gcpServer",
+                "sql": {
+                  "type": "insert",
+                  "values": [
+                    {
+                      "table": "m_recharge_plan",
+                      "column": "plan_type",
+                      "type": "text",
+                      "value": "{{$_POST.Name}}"
+                    },
+                    {
+                      "table": "m_recharge_plan",
+                      "column": "operator_name",
+                      "type": "text",
+                      "value": "{{$_POST.Email}}"
+                    },
+                    {
+                      "table": "m_recharge_plan",
+                      "column": "mrp_op_code",
+                      "type": "text",
+                      "value": "{{$_POST.Mobile}}"
+                    },
+                    {
+                      "table": "m_recharge_plan",
+                      "column": "amount",
+                      "type": "text",
+                      "value": "{{$_POST.Amount}}"
+                    },
+                    {
+                      "table": "m_recharge_plan",
+                      "column": "status",
+                      "type": "text",
+                      "value": "1"
+                    },
+                    {
+                      "table": "m_recharge_plan",
+                      "column": "created_on",
+                      "type": "datetime",
+                      "value": "{{NOW}}"
+                    }
+                  ],
+                  "table": "m_recharge_plan",
+                  "returning": "id",
+                  "query": "INSERT INTO m_recharge_plan\n(plan_type, operator_name, mrp_op_code, amount, status, created_on) VALUES (:P1 /* {{$_POST.Name}} */, :P2 /* {{$_POST.Email}} */, :P3 /* {{$_POST.Mobile}} */, :P4 /* {{$_POST.Amount}} */, '1', :P5 /* {{NOW}} */)",
+                  "params": [
+                    {
+                      "name": ":P1",
+                      "type": "expression",
+                      "value": "{{$_POST.Name}}"
+                    },
+                    {
+                      "name": ":P2",
+                      "type": "expression",
+                      "value": "{{$_POST.Email}}"
+                    },
+                    {
+                      "name": ":P3",
+                      "type": "expression",
+                      "value": "{{$_POST.Mobile}}"
+                    },
+                    {
+                      "name": ":P4",
+                      "type": "expression",
+                      "value": "{{$_POST.Amount}}"
+                    },
+                    {
+                      "name": ":P5",
+                      "type": "expression",
+                      "value": "{{NOW}}"
+                    }
+                  ]
+                }
+              },
+              "meta": [
+                {
+                  "name": "identity",
+                  "type": "text"
+                },
+                {
+                  "name": "affected",
+                  "type": "number"
+                }
+              ]
+            },
+            {
+              "name": "Status",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": 200
+              },
+              "meta": [],
+              "output": true,
+              "outputType": "text"
+            },
+            {
+              "name": "RespMsg",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": "New Record Added Successfully"
+              },
+              "meta": [],
+              "output": true,
+              "outputType": "text"
+            }
+          ]
+        }
+      },
+      "outputType": "boolean"
+    }
+  }
+}

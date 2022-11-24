@@ -1,0 +1,557 @@
+<!-- Wappler include head-page="layouts/main" fontawesome_5="cdn" bootstrap5="local" is="dmx-app" id="recharge1" appConnect="local" components="{dmxBootstrap5Navigation:{},dmxBootstrap5Modal:{},dmxSockets:{}}" -->
+<meta name="ac:route" content="/recharge">
+<dmx-value id="varROfferAmt" dmx-bind:value="0"></dmx-value>
+<dmx-serverconnect id="scLiveOpCircle" url="api/CheckAPIs/CheckOperatorCircle" dmx-param:phoneno="content.formMobileRecharge.inpMobile.value" noload></dmx-serverconnect>
+<script is="dmx-flow" id="flowLiveOpCircle" type="text/dmx-flow">
+    {
+    condition: {
+        if: "{{content.formMobileRecharge.inpMobile.value}}",
+        then: {
+            steps: {
+            run: {action: "{{scLiveOpCircle.load({})}}"}
+            }
+        }
+    }
+}
+</script>
+<dmx-serverconnect id="scOperator" url="api/Operator/MobileOpFetch"></dmx-serverconnect>
+<dmx-serverconnect id="scRechargeLive" url="api/Reports/LiveRechargeTr"></dmx-serverconnect>
+<dmx-serverconnect id="scMobileOffer" url="api/CheckAPIs/ROfferMobile" dmx-param:tel="content.formMobileRecharge.inpMobile.value" dmx-param:op="content.formMobileRecharge.inp_opname.selectedText" noload></dmx-serverconnect>
+<script is="dmx-flow" id="flowMobileRech" type="text/dmx-flow">
+    {
+    condition: {
+        if: "{{content.formMobileRecharge.inp_opname.selectedText && content.formMobileRecharge.inpMobile.value}}",
+        then: {
+            steps: {
+            run: {action: "{{scMobileOffer.load({})}}"}
+            }
+        }
+    }
+}
+</script>
+<dmx-serverconnect id="scMobilePlans" url="api/CheckAPIs/RPlansMobile" dmx-param:op="content.formMobileRecharge.inp_opname.selectedText" noload></dmx-serverconnect>
+<script is="dmx-flow" id="flowMobilePlans" type="text/dmx-flow">
+    {
+    condition: {
+        if: "{{content.formMobileRecharge.inp_opname.selectedText}}",
+        then: {
+            steps: {
+            run: {action: "{{scMobilePlans.load({})}}"}
+            }
+        }
+    }
+}
+</script>
+<dmx-serverconnect id="scDTHCheck" url="api/CheckAPIs/DthCheck" noload dmx-param:tel="content.formDTHRecharge.inpSubscriber.value" dmx-param:op="content.formDTHRecharge.inp_dth_opname.selectedText"></dmx-serverconnect>
+<script is="dmx-flow" id="flowDTHCheck" type="text/dmx-flow">
+    {
+    condition: {
+        if: "{{content.formDTHRecharge.inp_dth_opname.selectedText && content.formDTHRecharge.inpSubscriber.value}}",
+        then: {
+            steps: {
+            run: {action: "{{scDTHCheck.load({})}}"}
+            }
+        }
+    }
+}
+</script>
+<dmx-serverconnect id="scBSNLCheck" url="api/CheckAPIs/BSNLCheck" noload dmx-param:tel="content.formPostPaid.inpPostpaidMobile.value" dmx-param:op="content.formPostPaid.inp_postpaid_opname.value" dmx-param:stdcode="content.formPostPaid.inpPostpaidstdcode.value"></dmx-serverconnect>
+<script is="dmx-flow" id="flowBSNLCheck" type="text/dmx-flow">
+    {
+    condition: {
+        if: "{{content.formPostPaid.inpPostpaidMobile.value && content.formPostPaid.inp_postpaid_opname.value && content.formPostPaid.inpPostpaidstdcode.value}}",
+        then: {
+            steps: {
+            run: {action: "{{scBSNLCheck.load({})}}"}
+            }
+        }
+    }
+}
+</script>
+<div class="container mt-3">
+    <div class="row">
+        <div class="col-md-6 col-12">
+            <ul class="nav nav-pills mb-3 px-2" id="pills-tab" role="tablist">
+                <li class="nav-item border sw-border-radius col-4 px-0" role="presentation">
+                    <button class="nav-link active w-100 h6 mb-0" id="pills-home-tab" data-bs-toggle="pill" data-toggle="pill" href="#pills-home" data-bs-target="#pills-home" type="button" role="tab" aria-controls="pills-home" aria-selected="true">Mobile</button>
+                </li>
+                <li class="nav-item border sw-border-radius col-4 px-0" role="presentation">
+                    <button class="nav-link w-100 h6 mb-0" id="pills-profile-tab" data-toggle="pill" href="#pills-profile" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">DTH</button>
+                </li>
+                <li class="nav-item border sw-border-radius col-4 px-0" role="presentation">
+                    <button class="nav-link w-100 h6 mb-0" id="pills-contact-tab" data-toggle="pill" href="#pills-contact" data-bs-toggle="pill" data-bs-target="#pills-contact" type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Post-Paid</button>
+                </li>
+            </ul>
+            <div class="tab-content" id="pills-tabContent">
+                <div class="tab-pane fade show active px-2" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+                    <h4 class="mb-4">Mobile Recharge</h4>
+                    <div class="row">
+                        <form id="formMobileRecharge" method="post" action="api/Recharge/MobRechMultiAPI" is="dmx-serverconnect-form" dmx-on:success="scNotif.success(content.formMobileRecharge.lastError.response); formMobileRecharge.reset(); scLoginUser.load();modalRecharge.show();scRechargeLive.load();" dmx-on:error="scNotif.warning(formMobileRecharge.lastError.response)" dmx-on:unauthorized="scNotif.warning(formMobileRecharge.lastError.response)" dmx-on:forbidden="scNotif.warning(formMobileRecharge.lastError.response)" dmx-on:invalid="scNotif.warning(formMobileRecharge.lastError.response)">
+                            <div class="form-group row">
+                                <label class="text-monospace col-3 pe-0">Mobile No. (+91)</label>
+                                <div class="input-group mb-2 col-9 ps-0">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text bg-primary text-light">
+                                            <i class="fas fa-mobile-alt"></i>
+                                        </div>
+                                    </div>
+                                    <input type="number" class="form-control" id="inpMobile" name="mobile_number" placeholder="Enter 10 Digit Mobile No." maxlength="10" required="" title="Enter Amount" autocomplete="off" data-rule-number="" data-msg-number="Please enter a valid amount." dmx-on:change="flowLiveOpCircle.run();">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="text-monospace col-3 pe-0">Operator</label>
+                                <div class="input-group mb-2 col-9 ps-0">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text bg-primary text-light">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <select type="text" class="form-control form-select" id="inp_opname" name="op_code" aria-describedby="inp_opname_help" placeholder="Enter Operator Name" maxlength="50" data-msg-required="Operator Name is required." dmx-bind:options="content.scOperator.data.OperatorFetch" optiontext="operator_name" optionvalue="op_id" dmx-bind:value="content.scLiveOpCircle.data.operator_id">
+                                        <option value="">Select</option>
+
+                                    </select>
+                                    <div class="input-group-prepend" dmx-on:click="flowMobilePlans.run();modalRPlans.show()">
+                                        <div class="input-group-text bg-warning">
+                                            Plans!
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="text-monospace col-3 pe-0">Amount (in Rs.)</label>
+                                <div class="input-group mb-2 col-9 ps-0">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text bg-primary text-light">
+                                            <i class="fas fa-rupee-sign"></i>
+                                        </div>
+                                    </div>
+                                    <input type="number" class="form-control" id="inpAmount" name="recharge_amount" placeholder="Enter Amount" maxlength="5" required="" title="Enter Amount" autocomplete="off" data-rule-number="" data-msg-number="Please enter a valid amount." dmx-bind:value="varROfferAmt.value">
+                                    <div class="input-group-prepend" dmx-on:click="flowMobileRech.run();modalROffer.show()">
+                                        <div class="input-group-text bg-primary text-light">
+                                            Offers!
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="text-monospace col-3 pe-0">T-PIN</label>
+                                <div class="input-group mb-2 col-9 ps-0">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text bg-primary text-light">
+                                            <i class="fas fa-edit"></i>
+                                        </div>
+                                    </div>
+                                    <input type="number" class="form-control" id="mobileTPIN" name="mobile_tpin" placeholder="Enter T-Pin" maxlength="10" required="" title="Enter T-Pin" autocomplete="off" data-rule-number="" data-msg-number="Please enter a valid t-pin." maxlength="4">
+                                </div>
+                            </div>
+                            <div class="col text-center"><button type="submit" class="btn btn-primary pull-left px-5" dmx-bind:disabled="state.executing" id="btnmrecharge">Recharge<span class="spinner-border spinner-border-sm" role="status" dmx-show="state.executing"></span></button></div>
+
+                        </form>
+                    </div>
+                </div>
+                <div class="tab-pane fade px-2" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
+                    <h4 class="mb-4">DTH Recharge</h4>
+                    <div class="row">
+                        <form id="formDTHRecharge" method="post" action="api/Recharge/MobRechMultiAPI" is="dmx-serverconnect-form" dmx-on:success="scNotif.success(content.formMobileRecharge.lastError.response); formMobileRecharge.reset(); scLoginUser.load();modalRecharge.show();scRechargeLive.load();" dmx-on:error="scNotif.warning(formMobileRecharge.lastError.response)" dmx-on:unauthorized="scNotif.warning(formMobileRecharge.lastError.response)" dmx-on:forbidden="scNotif.warning(formMobileRecharge.lastError.response)" dmx-on:invalid="scNotif.warning(formMobileRecharge.lastError.response)">
+                            <div class="form-group row">
+                                <label class="text-monospace col-3 pe-0">Subscriber ID</label>
+                                <div class="input-group mb-2 col-9 ps-0">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text bg-primary text-light">
+                                            <i class="fas fa-user-alt"></i>
+                                        </div>
+                                    </div>
+                                    <input type="text" class="form-control" id="inpSubscriber" name="mobile_number" placeholder="Enter Subscriber Id" required="" title="Enter Subscriber Id" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="text-monospace col-3 pe-0">Operator</label>
+                                <div class="input-group mb-2 col-9 ps-0">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text bg-primary text-light">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <select type="text" class="form-control form-select" id="inp_dth_opname" name="op_code" aria-describedby="inp_opname_help" placeholder="Enter Operator Name" maxlength="50" data-msg-required="Operator Name is required." dmx-on:click="scOperator.load({})" dmx-bind:options="content.scOperator.data.GetDTHOpFetch" optiontext="operator_name" optionvalue="op_id">
+                                        <option value="">Select</option>
+
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="text-monospace col-3 pe-0">Amount (in Rs.)</label>
+                                <div class="input-group mb-2 col-9 ps-0">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text bg-primary text-light">
+                                            <i class="fas fa-rupee-sign"></i>
+                                        </div>
+                                    </div>
+                                    <input type="number" class="form-control" id="inpDTHAmount" name="recharge_amount" placeholder="Enter Amount" maxlength="5" required="" title="Enter Amount" autocomplete="off" data-rule-number="" data-msg-number="Please enter a valid amount.">
+                                    <div class="input-group-prepend" dmx-on:click="flowDTHCheck.run();modalDTHCheck.show()" title="Check DTH Customer Info.">
+                                        <div class="input-group-text bg-primary text-light">
+                                            Check
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="text-monospace col-3 pe-0">T-PIN</label>
+                                <div class="input-group mb-2 col-9 ps-0">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text bg-primary text-light">
+                                            <i class="fas fa-edit"></i>
+                                        </div>
+                                    </div>
+                                    <input type="number" class="form-control" id="dthTPIN" name="mobile_tpin" placeholder="Enter T-Pin" maxlength="10" required="" title="Enter T-Pin" autocomplete="off" data-rule-number="" data-msg-number="Please enter a valid t-pin." maxlength="4">
+                                </div>
+                            </div>
+                            <div class="col"><button type="submit" class="btn btn-primary pull-left" dmx-bind:disabled="state.executing" id="btndthrecharge">Recharge<span class="spinner-border spinner-border-sm" role="status" dmx-show="state.executing"></span></button></div>
+
+                        </form>
+                    </div>
+                </div>
+                <div class="tab-pane fade px-2" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">
+                    <h4 class="mb-4">PostPaid Recharge</h4>
+                    <div class="row">
+                        <form id="formPostPaid" method="post" action="api/Recharge/MobRechMultiAPI" is="dmx-serverconnect-form" dmx-on:success="scNotif.success(content.formMobileRecharge.lastError.response); formMobileRecharge.reset(); scLoginUser.load();scRechargeLive.load();modalRecharge.show();" dmx-on:error="scNotif.warning(formMobileRecharge.lastError.response)" dmx-on:unauthorized="scNotif.warning(formMobileRecharge.lastError.response)" dmx-on:forbidden="scNotif.warning(formMobileRecharge.lastError.response)" dmx-on:invalid="scNotif.warning(formMobileRecharge.lastError.response)">
+                            <div class="form-group row">
+                                <label class="text-monospace col-3 pe-0">PostPaid Number</label>
+                                <div class="input-group mb-2 col-9 ps-0">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text bg-primary text-light">
+                                            <i class="fas fa-mobile"></i>
+                                        </div>
+                                    </div>
+                                    <div class="input-group-prepend">
+                                        <input type="number" class="form-control" id="inpPostpaidMobile" name="mobile_number" placeholder="Enter PostPaid No." maxlength="20" required="" title="Enter PostPaid No." autocomplete="off" data-rule-number="" data-msg-number="Please enter a valid PostPaid No.">
+                                    </div>
+                                    <!-- <input type="number" class="form-control" id="inpPostpaidstdcode" name="stdcode" placeholder="STD Code" maxlength="6" required="" title="Enter STD Code" autocomplete="off" data-rule-number="" data-msg-number="Please enter a valid STD Code"> -->
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="text-monospace col-3 pe-0">Operator</label>
+                                <div class="input-group mb-2 col-9 ps-0">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text bg-primary text-light">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                    </div>
+                                    <select type="text" class="form-control form-select" id="inp_postpaid_opname" name="op_code" aria-describedby="inp_opname_help" placeholder="Enter Operator Name" maxlength="50" data-msg-required="Operator Name is required." dmx-on:click="scOperator.load({})" dmx-bind:options="content.scOperator.data.GetPostPaidOp" optiontext="operator_name" optionvalue="op_id">
+                                        <option value="">Select</option>
+
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="text-monospace col-3 pe-0">Amount (in Rs.)</label>
+                                <div class="input-group mb-2 col-9 ps-0">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text bg-primary text-light">
+                                            <i class="fas fa-rupee-sign"></i>
+                                        </div>
+                                    </div>
+                                    <input type="number" class="form-control" id="inpPostPaidAmount" name="recharge_amount" placeholder="Enter Amount" maxlength="5" required="" title="Enter Amount" autocomplete="off" data-rule-number="" data-msg-number="Please enter a valid amount.">
+                                    <div class="input-group-prepend" dmx-on:click="flowBSNLCheck.run();modalBSNLCheck.show()" title="Check Only BSNL Land Line">
+                                        <!-- <div class="input-group-text bg-primary text-light">
+                                            Check
+                                        </div> -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="text-monospace col-3 pe-0">T-PIN</label>
+                                <div class="input-group mb-2 col-9 ps-0">
+                                    <div class="input-group-prepend">
+                                        <div class="input-group-text bg-primary text-light">
+                                            <i class="fas fa-edit"></i>
+                                        </div>
+                                    </div>
+                                    <input type="number" class="form-control" id="PostPaidTPIN" name="mobile_tpin" placeholder="Enter T-Pin" maxlength="10" required="" title="Enter T-Pin" autocomplete="off" data-rule-number="" data-msg-number="Please enter a valid t-pin." maxlength="4">
+                                </div>
+                            </div>
+                            <div class="col"><button type="submit" class="btn btn-primary pull-left" dmx-bind:disabled="state.executing" id="btnPostPaidRecharge">Recharge<span class="spinner-border spinner-border-sm" role="status" dmx-show="state.executing"></span></button></div>
+
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-12">
+            <audio class="d-none" id="SuccessAlert">
+                <source src="assets/images/success-sound-effect.mp3" type="audio/mp3">
+            </audio>
+            <h4 class="text-center">Live Transactions <span class="border-3 ms-2 spinner-border spinner-border-sm" role="status" dmx-show="scRechargeLive.state.executing"></span></h4>
+            <h6 class="text-center">(Mobile/DTH/PostPaid)</h6>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Mobile/Id</th>
+                            <th scope="col">Operator</th>
+                            <th scope="col">Amount</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Transaction Date</th>
+                            <th scope="col">Tr. Mode</th>
+                            <th scope="col">Op. Bal.</th>
+                            <th scope="col">Net Amt.</th>
+                            <th scope="col">Closing Bal.</th>
+                        </tr>
+                    </thead>
+                    <tbody is="dmx-repeat" dmx-bind:repeat="content.scRechargeLive.data.RechargeLive" id="tableRepeatLive" key="id">
+                        <tr>
+                            <th scope="row">{{$index+1}}</th>
+                            <td dmx-text:value="recharge_mobile"></td>
+                            <td dmx-text:value="operator_name+' | '+service_name"></td>
+                            <td dmx-text:value="amount.toNumber().toFixed(2)"></td>
+                            <td dmx-text:value="status" dmx-class:text-success="status=='SUCCESS'" dmx-class:text-primary="status=='PENDING'" dmx-class:text-danger="status=='FAILED'"></td>
+                            <td dmx-text:value="tr_date.formatDate('dd-MM-yyyy hh:mm:ss A')"></td>
+                            <td dmx-text:value="tr_mode"></td>
+                            <td dmx-text:value="opening_balance.toNumber().toFixed(2)"></td>
+                            <td dmx-text:value="net_amt.toNumber().toFixed(2)"></td>
+                            <td dmx-text:value="closing_balance.toNumber().toFixed(2)"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modalRecharge" is="dmx-bs5-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Recharge</h5>
+                <button type="button" class="close btn-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close"></button>
+                <!-- dmx-on:click="browserMain.goto('recharge')" -->
+            </div>
+            <div class="modal-body">
+                <div class="col-12 text-center">
+                    <img src="assets/images/mark-success.gif" width="200" height="200" class="img-fluid" dmx-show="content.formMobileRecharge.data.apistatus == 'SUCCESS' || content.formMobileRecharge.data.apistatus == 'PENDING' || content.formMobileRecharge.data.repeat[0].apistatus == 'SUCCESS'  || content.formMobileRecharge.data.repeat[0].apistatus == 'PENDING' || content.formDTHRecharge.data.apistatus == 'SUCCESS' || content.formDTHRecharge.data.apistatus == 'PENDING' || content.formDTHRecharge.data.repeat[0].apistatus == 'SUCCESS' || content.formDTHRecharge.data.repeat[0].apistatus == 'PENDING' || content.formPostPaid.data.apistatus == 'SUCCESS' || content.formPostPaid.data.apistatus == 'PENDING' || content.formPostPaid.data.repeat[0].apistatus == 'SUCCESS'  || content.formPostPaid.data.repeat[0].apistatus == 'PENDING'">
+                    <img src="assets/images/mark-failure.gif" width="200" height="200" class="img-fluid" dmx-show="content.formMobileRecharge.data.apistatus == 'FAILED' || content.formMobileRecharge.data.repeat[0].apistatus == 'FAILED' || content.formDTHRecharge.data.apistatus == 'FAILED' || content.formDTHRecharge.data.repeat[0].apistatus == 'FAILED' ||
+                    content.formPostPaid.data.apistatus == 'FAILED' || content.formPostPaid.data.repeat[0].apistatus == 'FAILED' ">
+                </div>
+                <h5 dmx-show="content.formMobileRecharge.lastError.response.error == 'true' || content.formDTHRecharge.lastError.response.error == 'true' || content.formPostPaid.lastError.response.error == 'true'">Status:<b class="text-danger">{{content.formMobileRecharge.lastError.response.errorMessage}} {{content.formDTHRecharge.lastError.response.errorMessage}}{{content.formPostPaid.lastError.response.errorMessage}} {{content.formMobileRecharge.lastError.message}}{{content.formDTHRecharge.lastError.message}}{{content.formPostPaid.lastError.message}} {{content.formMobileRecharge.lastError.response.ip}} {{content.formDTHRecharge.lastError.response.ip}} {{content.formPostPaid.lastError.response.ip}}</b></h5>
+                <h5 dmx-show="content.formMobileRecharge.lastError.status == 0 || content.formDTHRecharge.lastError.status == 0 || content.formPostPaid.lastError.status == 0 ">Status: <span dmx-class:text-danger="content.formMobileRecharge.data.apistatus=='FAILED' || content.formDTHRecharge.data.apistatus=='FAILED' || content.formPostPaid.data.apistatus=='FAILED'" dmx-class:text-success="content.formMobileRecharge.data.apistatus=='SUCCESS'||content.formMobileRecharge.data.apistatus=='PENDING' || content.formDTHRecharge.data.apistatus=='SUCCESS'||content.formDTHRecharge.data.apistatus=='PENDING' || content.formPostPaid.data.apistatus=='SUCCESS'||content.formPostPaid.data.apistatus=='PENDING'">{{content.formMobileRecharge.data.apistatus}}{{content.formDTHRecharge.data.apistatus}}{{content.formPostPaid.data.apistatus}}</span><span dmx-class:text-danger="content.formMobileRecharge.data.apistatus=='FAILED'||content.formDTHRecharge.data.apistatus=='FAILED'||content.formPostPaid.data.apistatus=='FAILED'" dmx-class:text-success="content.formMobileRecharge.data.apistatus=='SUCCESS'||content.formMobileRecharge.data.apistatus=='PENDING'||content.formDTHRecharge.data.apistatus=='SUCCESS'||content.formDTHRecharge.data.apistatus=='PENDING'||content.formPostPaid.data.apistatus=='SUCCESS'||content.formPostPaid.data.apistatus=='PENDING'">{{content.formMobileRecharge.data.repeat[0].apistatus}}{{content.formDTHRecharge.data.repeat[0].apistatus}}{{content.formPostPaid.data.repeat[0].apistatus}}</span>&emsp;&emsp;&emsp;
+                    <span>Amount: {{content.formMobileRecharge.data.Amount}}{{content.formDTHRecharge.data.Amount}}{{content.formPostPaid.data.Amount}}/-</span>
+                </h5><!-- Ref ID -->
+                <h6>Mobile/Sub. Id: {{content.formMobileRecharge.data.Mobile}}{{content.formDTHRecharge.data.Mobile}}{{content.formPostPaid.data.Mobile}}
+                </h6>
+                <!-- Ref ID -->
+                <h6>Ref. Id: {{content.formMobileRecharge.data.api_ref}} {{content.formMobileRecharge.data.repeat[0].api_ref}}{{content.formDTHRecharge.data.api_ref}} {{content.formDTHRecharge.data.repeat[0].api_ref}}{{content.formPostPaid.data.api_ref}} {{content.formPostPaid.data.repeat[0].api_ref}}
+                </h6>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary close" data-bs-dismiss="modal" data-dismiss="modal">Close</button>
+            </div>
+            <!-- dmx-on:click="browserMain.goto('recharge')" -->
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modalROffer" is="dmx-bs5-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Available Recharge Offers <span class="border-3 ms-2 spinner-border spinner-border-sm" role="status" dmx-show="scMobileOffer.state.executing"></span></h5>
+                <button type="button" class="close btn-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body row mx-0" dmx-hide="scMobileOffer.state.executing">
+                <div class="col-6">
+                    Mobile: <b>{{content.scMobileOffer.data.ROfferApi.tel}}</b>
+                </div>
+                <div class="col-6">
+                    Operator: <b>{{content.scMobileOffer.data.ROfferApi.operator}}</b>
+                </div>
+
+                <div class="row mx-0 my-3" id="repeat1" is="dmx-repeat" dmx-bind:repeat="content.scMobileOffer.data.ROfferApi.records" key="rs">
+                    <div class="card col-6 col-md-4 col-lg-3">
+                        <div class="card-body px-1 py-2">
+                            <h5 class="card-title text-info">Rs. {{rs}}</h5>
+                            <p class="card-text text-muted text-justify sw-line-height">{{desc}}</p>
+                            <a href="#" class="btn btn-primary btn-sm" dmx-on:click="varROfferAmt.setValue(rs);modalROffer.hide()">Recharge</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary close" data-bs-dismiss="modal" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modalRPlans" is="dmx-bs5-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Available Recharge Plans <span class="border-3 ms-2 spinner-border spinner-border-sm" role="status" dmx-show="scMobilePlans.state.executing"></span></h5>
+                <button type="button" class="close btn-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" dmx-hide="scMobilePlans.state.executing">
+                <ul class="nav nav-pills mb-3" id="pills-tab-rplans" role="tablist">
+                    <li class="nav-item border sw-border-radius col-2 px-0" role="presentation">
+                        <button class="nav-link active w-100 h6 mb-0 px-0" id="pills-fulltt-tab" data-bs-toggle="pill" data-toggle="pill" href="#pills-fulltt" data-bs-target="#pills-fulltt" type="button" role="tab" aria-controls="pills-fulltt" aria-selected="true">FULLTT</button>
+                    </li>
+                    <li class="nav-item border sw-border-radius col-2 px-0" role="presentation">
+                        <button class="nav-link w-100 h6 mb-0 px-0" id="pills-topup-tab" data-toggle="pill" href="#pills-topup" data-bs-toggle="pill" data-bs-target="#pills-topup" type="button" role="tab" aria-controls="pills-topup" aria-selected="false">TOPUP</button>
+                    </li>
+                    <li class="nav-item border sw-border-radius col-2 px-0" role="presentation">
+                        <button class="nav-link w-100 h6 mb-0 px-0" id="pills-roaming-tab" data-toggle="pill" href="#pills-roaming" data-bs-toggle="pill" data-bs-target="#pills-roaming" type="button" role="tab" aria-controls="pills-roaming" aria-selected="false">Popular</button>
+                    </li>
+                    <li class="nav-item border sw-border-radius col-2 px-0" role="presentation">
+                        <button class="nav-link w-100 h6 mb-0 px-0" id="pills-3g4g-tab" data-toggle="pill" href="#pills-3g4g" data-bs-toggle="pill" data-bs-target="#pills-3g4g" type="button" role="tab" aria-controls="pills-3g4g" aria-selected="false">Data</button>
+                    </li>
+                    <li class="nav-item border sw-border-radius col-2 px-0" role="presentation">
+                        <button class="nav-link w-100 h6 mb-0 px-0" id="pills-2g-tab" data-toggle="pill" href="#pills-2g" data-bs-toggle="pill" data-bs-target="#pills-2g" type="button" role="tab" aria-controls="pills-2g" aria-selected="false">2G Phone</button>
+                    </li>
+                    <li class="nav-item border sw-border-radius col-1 px-0" role="presentation">
+                        <button class="nav-link w-100 h6 mb-0 px-0" id="pills-ratecutter-tab" data-toggle="pill" href="#pills-ratecutter" data-bs-toggle="pill" data-bs-target="#pills-ratecutter" type="button" role="tab" aria-controls="pills-ratecutter" aria-selected="false">ISD</button>
+                    </li>
+                    <li class="nav-item border sw-border-radius col-1 px-0" role="presentation">
+                        <button class="nav-link w-100 h6 mb-0 px-0" id="pills-sms-tab" data-toggle="pill" href="#pills-sms" data-bs-toggle="pill" data-bs-target="#pills-sms" type="button" role="tab" aria-controls="pills-sms" aria-selected="false">SMS</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="pills-tabContent-rplsans">
+                    <div class="tab-pane fade show active px-2" id="pills-fulltt" role="tabpanel" aria-labelledby="pills-fulltt-tab">
+                        <h4 class="mb-4">Full Talk Time</h4>
+                        <div class="row mx-0 my-3" id="repeat2" is="dmx-repeat" dmx-bind:repeat="content.scMobilePlans.data.MobileRPlans.records.FULLTT" key="rs">
+                            <div class="card col-6 col-md-4 col-lg-3">
+                                <div class="card-body px-1 py-2">
+                                    <h5 class="card-title text-info">Rs. {{rs}}</h5>
+                                    <p class="card-text text-muted text-justify sw-line-height">{{desc}}</p>
+                                    <a href="#" class="btn btn-primary btn-sm" dmx-on:click="varROfferAmt.setValue(rs);modalRPlans.hide()">Recharge</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade px-2" id="pills-topup" role="tabpanel" aria-labelledby="pills-topup-tab">
+                        <h4 class="mb-4">TopUps</h4>
+                        <div class="row mx-0 my-3" id="repeatTopUp" is="dmx-repeat" dmx-bind:repeat="content.scMobilePlans.data.MobileRPlans.records.TOPUP" key="rs">
+                            <div class="card col-6 col-md-4 col-lg-3">
+                                <div class="card-body px-1 py-2">
+                                    <h5 class="card-title text-info">Rs. {{rs}}</h5>
+                                    <p class="card-text text-muted text-justify sw-line-height">{{desc}}</p>
+                                    <a href="#" class="btn btn-primary btn-sm" dmx-on:click="varROfferAmt.setValue(rs);modalRPlans.hide()">Recharge</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade px-2" id="pills-roaming" role="tabpanel" aria-labelledby="pills-roaming-tab">
+                        <h4 class="mb-4">Popular Plans</h4>
+                        <div class="row mx-0 my-3" id="repeatRoaning" is="dmx-repeat" dmx-bind:repeat="content.scMobilePlans.data.MobileRPlans.records.Romaing" key="rs">
+                            <div class="card col-6 col-md-4 col-lg-3">
+                                <div class="card-body px-1 py-2">
+                                    <h5 class="card-title text-info">Rs. {{rs}}</h5>
+                                    <p class="card-text text-muted text-justify sw-line-height">{{desc}}</p>
+                                    <a href="#" class="btn btn-primary btn-sm" dmx-on:click="varROfferAmt.setValue(rs);modalRPlans.hide()">Recharge</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade px-2" id="pills-3g4g" role="tabpanel" aria-labelledby="pills-3g4g-tab">
+                        <h4 class="mb-4">Data Plans</h4>
+                        <div class="row mx-0 my-3" id="repeat3g4g" is="dmx-repeat" dmx-bind:repeat="content.scMobilePlans.data.MobileRPlans.records['3G/4G']" key="rs">
+                            <div class="card col-6 col-md-4 col-lg-3">
+                                <div class="card-body px-1 py-2">
+                                    <h5 class="card-title text-info">Rs. {{rs}}</h5>
+                                    <p class="card-text text-muted text-justify sw-line-height">{{desc}}</p>
+                                    <a href="#" class="btn btn-primary btn-sm" dmx-on:click="varROfferAmt.setValue(rs);modalRPlans.hide()">Recharge</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade px-2" id="pills-2g" role="tabpanel" aria-labelledby="pills-2g-tab">
+                        <h4 class="mb-4">2G Phone</h4>
+                        <div class="row mx-0 my-3" id="repeat2g" is="dmx-repeat" dmx-bind:repeat="content.scMobilePlans.data.MobileRPlans.records['2G']" key="rs">
+                            <div class="card col-6 col-md-4 col-lg-3">
+                                <div class="card-body px-1 py-2">
+                                    <h5 class="card-title text-info">Rs. {{rs}}</h5>
+                                    <p class="card-text text-muted text-justify sw-line-height">{{desc}}</p>
+                                    <a href="#" class="btn btn-primary btn-sm" dmx-on:click="varROfferAmt.setValue(rs);modalRPlans.hide()">Recharge</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade px-2" id="pills-ratecutter" role="tabpanel" aria-labelledby="pills-ratecutter-tab">
+                        <h4 class="mb-4">ISD/ International</h4>
+                        <div class="row mx-0 my-3" id="repeatRateCutter" is="dmx-repeat" dmx-bind:repeat="content.scMobilePlans.data.MobileRPlans.records['RATE CUTTER']" key="rs">
+                            <div class="card col-6 col-md-4 col-lg-3">
+                                <div class="card-body px-1 py-2">
+                                    <h5 class="card-title text-info">Rs. {{rs}}</h5>
+                                    <p class="card-text text-muted text-justify sw-line-height">{{desc}}</p>
+                                    <a href="#" class="btn btn-primary btn-sm" dmx-on:click="varROfferAmt.setValue(rs);modalRPlans.hide()">Recharge</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade px-2" id="pills-sms" role="tabpanel" aria-labelledby="pills-sms-tab">
+                        <h4 class="mb-4">SMS</h4>
+                        <div class="row mx-0 my-3" id="sms" is="dmx-repeat" dmx-bind:repeat="content.scMobilePlans.data.MobileRPlans.records['SMS']" key="rs">
+                            <div class="card col-6 col-md-4 col-lg-3">
+                                <div class="card-body px-1 py-2">
+                                    <h5 class="card-title text-info">Rs. {{rs}}</h5>
+                                    <p class="card-text text-muted text-justify sw-line-height">{{desc}}</p>
+                                    <a href="#" class="btn btn-primary btn-sm" dmx-on:click="varROfferAmt.setValue(rs);modalRPlans.hide()">Recharge</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- <div class="row mx-0 my-3" id="repeat2" is="dmx-repeat" dmx-bind:repeat="content.scMobilePlans.data.MobileRPlans.records." key="rs">
+                    <div class="card col-6 col-md-4 col-lg-3">
+                        <div class="card-body px-1 py-2">
+                            <h5 class="card-title text-info">Rs. {{rs}}</h5>
+                            <p class="card-text text-muted text-justify sw-line-height">{{desc}}</p>
+                            <a href="#" class="btn btn-primary btn-sm" dmx-on:click="varROfferAmt.setValue(rs);modalROffer.hide()">Recharge</a>
+                        </div>
+                    </div>
+                </div> -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary close" data-bs-dismiss="modal" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modalDTHCheck" is="dmx-bs5-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">DTH Customer Info.<span class="border-3 ms-2 spinner-border spinner-border-sm" role="status" dmx-show="scDTHCheck.state.executing"></span></h5>
+                <button type="button" class="close btn-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body row mx-0" dmx-hide="scDTHCheck.state.executing">
+                <div class="col-6">
+                    Subscriber Id:&emsp;<b>{{content.scDTHCheck.data.DTHUserCheck.tel}}</b>
+                </div>
+                <div class="col-6">
+                    Operator:&emsp;<b>{{content.scDTHCheck.data.DTHUserCheck.operator}}</b>
+                </div>
+
+                <div class="row mx-0 my-3" id="repeatDTHCheck">
+                    <div class="card col-12">
+                        <img class="card-img-top" src="assets/images/icons/user-icon.svg" alt="scDTHCheck.data.DTHUserCheck.records[0].customerName" width="100" height="100">
+                        <div class="card-body px-1 py-2">
+                            <h5 class="card-title text-info">{{scDTHCheck.data.DTHUserCheck.records[0].customerName}}</h5>
+                            <p class="card-text text-muted text-justify sw-line-height">Balance Remaining: {{scDTHCheck.data.DTHUserCheck.records[0].Balance}}</p>
+                            <p class="card-text text-muted text-justify sw-line-height">Monthly Recharge: {{scDTHCheck.data.DTHUserCheck.records[0].MonthlyRecharge}}</p>
+                            <p class="card-text text-muted text-justify sw-line-height">Next Recharge Date: {{scDTHCheck.data.DTHUserCheck.records[0].NextRechargeDate}}</p>
+                            <p class="card-text text-muted text-justify sw-line-height">Plan Details: {{scDTHCheck.data.DTHUserCheck.records[0].planname}}</p>
+                            <p class="card-text text-primary text-justify sw-line-height">Status: {{scDTHCheck.data.DTHUserCheck.records[0].status}}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary close" data-bs-dismiss="modal" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var x = document.getElementById("SuccessAlert"); 
+    function playSuccess() { 
+    x.play(); 
+    } 
+</script>

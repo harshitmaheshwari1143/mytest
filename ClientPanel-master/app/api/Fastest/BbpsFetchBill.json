@@ -1,0 +1,1734 @@
+{
+  "meta": {
+    "options": {
+      "linkedFile": "/views/login.ejs",
+      "linkedForm": "formLogin"
+    },
+    "$_POST": [
+      {
+        "type": "text",
+        "options": {
+          "rules": {}
+        },
+        "name": "UserId"
+      },
+      {
+        "type": "text",
+        "options": {
+          "rules": {}
+        },
+        "name": "Token"
+      },
+      {
+        "type": "text",
+        "options": {
+          "rules": {}
+        },
+        "name": "TPIN"
+      },
+      {
+        "type": "text",
+        "options": {
+          "rules": {}
+        },
+        "name": "ReqId"
+      },
+      {
+        "type": "text",
+        "options": {
+          "rules": {}
+        },
+        "name": "OpCode"
+      },
+      {
+        "type": "text",
+        "options": {
+          "rules": {}
+        },
+        "name": "AccountNo"
+      },
+      {
+        "type": "text",
+        "options": {
+          "rules": {}
+        },
+        "name": "Mobile"
+      },
+      {
+        "type": "text",
+        "name": "Field1"
+      },
+      {
+        "type": "text",
+        "name": "Field2"
+      }
+    ],
+    "$_SERVER": [
+      {
+        "type": "text",
+        "name": "REMOTE_ADDR"
+      }
+    ]
+  },
+  "exec": {
+    "steps": {
+      "name": "",
+      "module": "core",
+      "action": "trycatch",
+      "options": {
+        "try": {
+          "steps": {
+            "name": "",
+            "module": "core",
+            "action": "condition",
+            "options": {
+              "if": "{{$_POST.UserId+$_POST.Token+$_POST.TPIN+$_POST.ReqId+$_POST.OpCode+$_POST.AccountNo+$_POST.Mobile}}",
+              "then": {
+                "steps": [
+                  {
+                    "name": "getSalt",
+                    "module": "dbconnector",
+                    "action": "single",
+                    "options": {
+                      "connection": "postgres_gcpServer",
+                      "sql": {
+                        "type": "SELECT",
+                        "columns": [
+                          {
+                            "table": "m_users",
+                            "column": "salt",
+                            "alias": "saltvalue"
+                          },
+                          {
+                            "table": "m_users",
+                            "column": "user_tpin"
+                          },
+                          {
+                            "table": "m_users",
+                            "column": "id"
+                          },
+                          {
+                            "table": "tat",
+                            "column": "ip_address1"
+                          },
+                          {
+                            "table": "tat",
+                            "column": "ip_address2"
+                          },
+                          {
+                            "table": "tat",
+                            "column": "ip_address3"
+                          }
+                        ],
+                        "table": {
+                          "name": "m_users"
+                        },
+                        "joins": [
+                          {
+                            "table": "t_api_token",
+                            "column": "*",
+                            "alias": "tat",
+                            "type": "LEFT",
+                            "clauses": {
+                              "condition": "AND",
+                              "rules": [
+                                {
+                                  "table": "tat",
+                                  "column": "user_id",
+                                  "operator": "equal",
+                                  "value": {
+                                    "table": "m_users",
+                                    "column": "id"
+                                  },
+                                  "operation": "="
+                                }
+                              ]
+                            },
+                            "primary": "id"
+                          }
+                        ],
+                        "query": "SELECT m_users.salt AS saltvalue, m_users.user_tpin, m_users.id, tat.ip_address1, tat.ip_address2, tat.ip_address3\nFROM m_users\nLEFT JOIN t_api_token AS tat ON (tat.user_id = m_users.id)\nWHERE m_users.user_type = 5 AND m_users.u_status = '1' AND m_users.id = :P1 /* {{$_POST.UserId}} */ AND tat.status = 1",
+                        "params": [
+                          {
+                            "operator": "equal",
+                            "type": "expression",
+                            "name": ":P1",
+                            "value": "{{$_POST.UserId}}"
+                          }
+                        ],
+                        "wheres": {
+                          "condition": "AND",
+                          "rules": [
+                            {
+                              "id": "m_users.user_type",
+                              "field": "m_users.user_type",
+                              "type": "double",
+                              "operator": "equal",
+                              "value": 5,
+                              "data": {
+                                "table": "m_users",
+                                "column": "user_type",
+                                "type": "number",
+                                "columnObj": {
+                                  "type": "reference",
+                                  "primary": false,
+                                  "nullable": false,
+                                  "unique": false,
+                                  "references": "id",
+                                  "inTable": "m_user_type",
+                                  "onUpdate": "NO ACTION",
+                                  "onDelete": "NO ACTION",
+                                  "name": "user_type"
+                                }
+                              },
+                              "operation": "="
+                            },
+                            {
+                              "id": "m_users.u_status",
+                              "field": "m_users.u_status",
+                              "type": "string",
+                              "operator": "equal",
+                              "value": "1",
+                              "data": {
+                                "table": "m_users",
+                                "column": "u_status",
+                                "type": "text",
+                                "columnObj": {
+                                  "type": "string",
+                                  "primary": false,
+                                  "nullable": true,
+                                  "maxLength": -5,
+                                  "unique": false,
+                                  "name": "u_status"
+                                }
+                              },
+                              "operation": "="
+                            },
+                            {
+                              "id": "m_users.id",
+                              "field": "m_users.id",
+                              "type": "double",
+                              "operator": "equal",
+                              "value": "{{$_POST.UserId}}",
+                              "data": {
+                                "table": "m_users",
+                                "column": "id",
+                                "type": "number",
+                                "columnObj": {
+                                  "type": "increments",
+                                  "default": "",
+                                  "primary": true,
+                                  "nullable": false,
+                                  "unique": true,
+                                  "name": "id"
+                                }
+                              },
+                              "operation": "="
+                            },
+                            {
+                              "id": "tat.status",
+                              "field": "tat.status",
+                              "type": "double",
+                              "operator": "equal",
+                              "value": 1,
+                              "data": {
+                                "table": "tat",
+                                "column": "status",
+                                "type": "number",
+                                "columnObj": {
+                                  "type": "integer",
+                                  "primary": false,
+                                  "nullable": true,
+                                  "unique": false,
+                                  "name": "status"
+                                }
+                              },
+                              "operation": "="
+                            }
+                          ],
+                          "conditional": null,
+                          "valid": true
+                        },
+                        "primary": "id"
+                      }
+                    },
+                    "output": false,
+                    "meta": [
+                      {
+                        "type": "text",
+                        "name": "saltvalue"
+                      },
+                      {
+                        "type": "text",
+                        "name": "user_tpin"
+                      },
+                      {
+                        "type": "number",
+                        "name": "id"
+                      },
+                      {
+                        "type": "text",
+                        "name": "ip_address1"
+                      },
+                      {
+                        "type": "text",
+                        "name": "ip_address2"
+                      },
+                      {
+                        "type": "text",
+                        "name": "ip_address3"
+                      }
+                    ],
+                    "outputType": "object"
+                  },
+                  {
+                    "name": "",
+                    "module": "core",
+                    "action": "condition",
+                    "options": {
+                      "if": "{{getSalt.saltvalue}}",
+                      "then": {
+                        "steps": [
+                          {
+                            "name": "identity",
+                            "module": "auth",
+                            "action": "login",
+                            "options": {
+                              "provider": "APISecurity",
+                              "password": "{{$_POST.Token}}",
+                              "username": "{{$_POST.UserId}}",
+                              "remember": ""
+                            },
+                            "output": false,
+                            "meta": []
+                          },
+                          {
+                            "name": "",
+                            "module": "core",
+                            "action": "condition",
+                            "options": {
+                              "if": "{{identity}}",
+                              "then": {
+                                "steps": [
+                                  {
+                                    "name": "UserIp",
+                                    "module": "core",
+                                    "action": "setvalue",
+                                    "options": {
+                                      "value": "{{$_SERVER.REMOTE_ADDR}}"
+                                    },
+                                    "meta": [],
+                                    "outputType": "text",
+                                    "output": false
+                                  },
+                                  {
+                                    "name": "ReqId",
+                                    "module": "core",
+                                    "action": "setvalue",
+                                    "options": {
+                                      "value": "{{$_POST.ReqId}}"
+                                    },
+                                    "meta": [],
+                                    "outputType": "text",
+                                    "output": false
+                                  },
+                                  {
+                                    "name": "",
+                                    "module": "core",
+                                    "action": "condition",
+                                    "options": {
+                                      "if": "{{(getSalt.ip_address1==UserIp)||(getSalt.ip_address2==UserIp)||(getSalt.ip_address3==UserIp)}}",
+                                      "then": {
+                                        "steps": [
+                                          {
+                                            "name": "CheckUniqueTrId",
+                                            "module": "dbconnector",
+                                            "action": "single",
+                                            "options": {
+                                              "connection": "postgres_gcpServer",
+                                              "sql": {
+                                                "type": "SELECT",
+                                                "columns": [
+                                                  {
+                                                    "table": "tt_recharge_trans",
+                                                    "column": "id",
+                                                    "alias": "CountId",
+                                                    "aggregate": "COUNT"
+                                                  }
+                                                ],
+                                                "table": {
+                                                  "name": "tt_recharge_trans"
+                                                },
+                                                "primary": "id",
+                                                "joins": [],
+                                                "groupBy": [],
+                                                "wheres": {
+                                                  "condition": "AND",
+                                                  "rules": [
+                                                    {
+                                                      "id": "tt_recharge_trans.tr_id",
+                                                      "field": "tt_recharge_trans.tr_id",
+                                                      "type": "string",
+                                                      "operator": "equal",
+                                                      "value": "{{ReqId}}",
+                                                      "data": {
+                                                        "table": "tt_recharge_trans",
+                                                        "column": "tr_id",
+                                                        "type": "text",
+                                                        "columnObj": {
+                                                          "type": "string",
+                                                          "primary": false,
+                                                          "nullable": true,
+                                                          "maxLength": -5,
+                                                          "unique": false,
+                                                          "name": "tr_id"
+                                                        }
+                                                      },
+                                                      "operation": "="
+                                                    }
+                                                  ],
+                                                  "conditional": null,
+                                                  "valid": true
+                                                },
+                                                "query": "SELECT COUNT(id) AS CountId\nFROM tt_recharge_trans\nWHERE tr_id = :P1 /* {{ReqId}} */",
+                                                "params": [
+                                                  {
+                                                    "operator": "equal",
+                                                    "type": "expression",
+                                                    "name": ":P1",
+                                                    "value": "{{ReqId}}"
+                                                  }
+                                                ]
+                                              }
+                                            },
+                                            "output": false,
+                                            "meta": [
+                                              {
+                                                "type": "number",
+                                                "name": "CountId"
+                                              }
+                                            ],
+                                            "outputType": "object"
+                                          },
+                                          {
+                                            "name": "",
+                                            "module": "core",
+                                            "action": "condition",
+                                            "options": {
+                                              "if": "{{CheckUniqueTrId.CountId<1}}",
+                                              "then": {
+                                                "steps": [
+                                                  {
+                                                    "name": "GetOpCode",
+                                                    "module": "dbconnector",
+                                                    "action": "single",
+                                                    "options": {
+                                                      "connection": "postgres_gcpServer",
+                                                      "sql": {
+                                                        "type": "SELECT",
+                                                        "columns": [
+                                                          {
+                                                            "table": "t_op_api_rel",
+                                                            "column": "api_code7",
+                                                            "alias": "utilityopcode"
+                                                          },
+                                                          {
+                                                            "table": "t_op_api_rel",
+                                                            "column": "api_code9",
+                                                            "alias": "payone"
+                                                          },
+                                                          {
+                                                            "table": "t_op_api_rel",
+                                                            "column": "op_id"
+                                                          }
+                                                        ],
+                                                        "table": {
+                                                          "name": "t_op_api_rel"
+                                                        },
+                                                        "joins": [],
+                                                        "wheres": {
+                                                          "condition": "AND",
+                                                          "rules": [
+                                                            {
+                                                              "id": "t_op_api_rel.api_code1",
+                                                              "field": "t_op_api_rel.api_code1",
+                                                              "type": "string",
+                                                              "operator": "equal",
+                                                              "value": "{{$_POST.OpCode}}",
+                                                              "data": {
+                                                                "table": "t_op_api_rel",
+                                                                "column": "api_code1",
+                                                                "type": "text",
+                                                                "columnObj": {
+                                                                  "type": "string",
+                                                                  "maxLength": 10,
+                                                                  "primary": false,
+                                                                  "nullable": true,
+                                                                  "unique": false,
+                                                                  "name": "api_code1"
+                                                                }
+                                                              },
+                                                              "operation": "="
+                                                            }
+                                                          ],
+                                                          "conditional": null,
+                                                          "valid": true
+                                                        },
+                                                        "query": "SELECT api_code7 AS utilityopcode, api_code9 AS payone, op_id\nFROM t_op_api_rel\nWHERE api_code1 = :P1 /* {{$_POST.OpCode}} */",
+                                                        "params": [
+                                                          {
+                                                            "operator": "equal",
+                                                            "type": "expression",
+                                                            "name": ":P1",
+                                                            "value": "{{$_POST.OpCode}}"
+                                                          }
+                                                        ],
+                                                        "primary": "id"
+                                                      }
+                                                    },
+                                                    "output": false,
+                                                    "meta": [
+                                                      {
+                                                        "type": "text",
+                                                        "name": "utilityopcode"
+                                                      },
+                                                      {
+                                                        "type": "text",
+                                                        "name": "payone"
+                                                      },
+                                                      {
+                                                        "type": "number",
+                                                        "name": "op_id"
+                                                      }
+                                                    ],
+                                                    "outputType": "object"
+                                                  },
+                                                  {
+                                                    "name": "GetOpAPICodeFwrd",
+                                                    "module": "dbconnector",
+                                                    "action": "single",
+                                                    "options": {
+                                                      "connection": "postgres_gcpServer",
+                                                      "sql": {
+                                                        "type": "SELECT",
+                                                        "columns": [
+                                                          {
+                                                            "table": "t_op_api_rel",
+                                                            "column": "api_code1",
+                                                            "alias": "ouropcode"
+                                                          },
+                                                          {
+                                                            "table": "t_op_api_rel",
+                                                            "column": "api_code7",
+                                                            "alias": "utilityopcode"
+                                                          },
+                                                          {
+                                                            "table": "t_op_api_rel",
+                                                            "column": "api_code9",
+                                                            "alias": "payone"
+                                                          },
+                                                          {
+                                                            "table": "m_api_fwd",
+                                                            "column": "service_id"
+                                                          },
+                                                          {
+                                                            "table": "m_api_fwd",
+                                                            "column": "api_id"
+                                                          },
+                                                          {
+                                                            "table": "m_api",
+                                                            "column": "api_name"
+                                                          },
+                                                          {
+                                                            "table": "m_api",
+                                                            "column": "api_code"
+                                                          },
+                                                          {
+                                                            "table": "m_api",
+                                                            "column": "username"
+                                                          },
+                                                          {
+                                                            "table": "m_api",
+                                                            "column": "api_password"
+                                                          }
+                                                        ],
+                                                        "table": {
+                                                          "name": "t_op_api_rel"
+                                                        },
+                                                        "joins": [
+                                                          {
+                                                            "table": "m_api_forward",
+                                                            "column": "*",
+                                                            "alias": "m_api_fwd",
+                                                            "type": "LEFT",
+                                                            "clauses": {
+                                                              "condition": "AND",
+                                                              "rules": [
+                                                                {
+                                                                  "table": "m_api_fwd",
+                                                                  "column": "operator_id",
+                                                                  "operator": "equal",
+                                                                  "value": {
+                                                                    "table": "t_op_api_rel",
+                                                                    "column": "op_id"
+                                                                  },
+                                                                  "operation": "="
+                                                                }
+                                                              ]
+                                                            }
+                                                          },
+                                                          {
+                                                            "table": "m_api",
+                                                            "column": "*",
+                                                            "alias": "m_api",
+                                                            "type": "LEFT",
+                                                            "clauses": {
+                                                              "condition": "AND",
+                                                              "rules": [
+                                                                {
+                                                                  "table": "m_api",
+                                                                  "column": "id",
+                                                                  "operator": "equal",
+                                                                  "value": {
+                                                                    "table": "m_api_fwd",
+                                                                    "column": "api_id"
+                                                                  },
+                                                                  "operation": "="
+                                                                }
+                                                              ]
+                                                            },
+                                                            "primary": "id"
+                                                          }
+                                                        ],
+                                                        "query": "SELECT t_op_api_rel.api_code1 AS ouropcode, t_op_api_rel.api_code7 AS utilityopcode, t_op_api_rel.api_code9 AS payone, m_api_fwd.service_id, m_api_fwd.api_id, m_api.api_name, m_api.api_code, m_api.username, m_api.api_password\nFROM t_op_api_rel\nLEFT JOIN m_api_forward AS m_api_fwd ON (m_api_fwd.operator_id = t_op_api_rel.op_id) LEFT JOIN m_api AS m_api ON (m_api.id = m_api_fwd.api_id)\nWHERE t_op_api_rel.op_id = :P1 /* {{GetOpCode.op_id}} */ AND m_api.status = 1",
+                                                        "params": [
+                                                          {
+                                                            "operator": "equal",
+                                                            "type": "expression",
+                                                            "name": ":P1",
+                                                            "value": "{{GetOpCode.op_id}}"
+                                                          }
+                                                        ],
+                                                        "wheres": {
+                                                          "condition": "AND",
+                                                          "rules": [
+                                                            {
+                                                              "id": "t_op_api_rel.op_id",
+                                                              "field": "t_op_api_rel.op_id",
+                                                              "type": "double",
+                                                              "operator": "equal",
+                                                              "value": "{{GetOpCode.op_id}}",
+                                                              "data": {
+                                                                "table": "t_op_api_rel",
+                                                                "column": "op_id",
+                                                                "type": "number",
+                                                                "columnObj": {
+                                                                  "type": "reference",
+                                                                  "primary": false,
+                                                                  "nullable": false,
+                                                                  "unique": false,
+                                                                  "references": "id",
+                                                                  "inTable": "m_operator",
+                                                                  "onUpdate": "NO ACTION",
+                                                                  "onDelete": "NO ACTION",
+                                                                  "name": "op_id"
+                                                                }
+                                                              },
+                                                              "operation": "="
+                                                            },
+                                                            {
+                                                              "id": "m_api.status",
+                                                              "field": "m_api.status",
+                                                              "type": "double",
+                                                              "operator": "equal",
+                                                              "value": 1,
+                                                              "data": {
+                                                                "table": "m_api",
+                                                                "column": "status",
+                                                                "type": "number",
+                                                                "columnObj": {
+                                                                  "type": "integer",
+                                                                  "primary": false,
+                                                                  "nullable": false,
+                                                                  "unique": false,
+                                                                  "name": "status"
+                                                                }
+                                                              },
+                                                              "operation": "="
+                                                            }
+                                                          ],
+                                                          "conditional": null,
+                                                          "valid": true
+                                                        },
+                                                        "primary": "id"
+                                                      }
+                                                    },
+                                                    "output": false,
+                                                    "meta": [
+                                                      {
+                                                        "type": "text",
+                                                        "name": "ouropcode"
+                                                      },
+                                                      {
+                                                        "type": "text",
+                                                        "name": "utilityopcode"
+                                                      },
+                                                      {
+                                                        "type": "text",
+                                                        "name": "payone"
+                                                      },
+                                                      {
+                                                        "type": "number",
+                                                        "name": "service_id"
+                                                      },
+                                                      {
+                                                        "type": "number",
+                                                        "name": "api_id"
+                                                      },
+                                                      {
+                                                        "type": "text",
+                                                        "name": "api_name"
+                                                      },
+                                                      {
+                                                        "type": "text",
+                                                        "name": "api_code"
+                                                      },
+                                                      {
+                                                        "type": "text",
+                                                        "name": "username"
+                                                      },
+                                                      {
+                                                        "type": "text",
+                                                        "name": "api_password"
+                                                      }
+                                                    ],
+                                                    "outputType": "object"
+                                                  },
+                                                  {
+                                                    "name": "",
+                                                    "module": "core",
+                                                    "action": "condition",
+                                                    "options": {
+                                                      "if": "{{GetOpAPICodeFwrd.api_code=='UH'}}",
+                                                      "then": {
+                                                        "steps": [
+                                                          {
+                                                            "name": "api",
+                                                            "module": "api",
+                                                            "action": "send",
+                                                            "options": {
+                                                              "url": "https://utilityhub.app/API/FetchBill",
+                                                              "params": {
+                                                                "UserID": "{{214}}",
+                                                                "Token": "{{'879cfb7ae02677efe36abde00dc77fac'}}",
+                                                                "Account": "{{$_POST.AccountNo}}",
+                                                                "Amount": "0",
+                                                                "SPKey": "{{GetOpCode.utilityopcode}}",
+                                                                "APIRequestID": "{{ReqId}}",
+                                                                "Optional1": "",
+                                                                "Optional2": "",
+                                                                "Optional3": "",
+                                                                "Optional4": "",
+                                                                "GEOCode": "{{'23.8530,87.9727'}}",
+                                                                "CustomerNumber": "{{$_POST.Mobile}}",
+                                                                "Pincode": "{{243601}}",
+                                                                "Format": "1"
+                                                              }
+                                                            },
+                                                            "output": false
+                                                          },
+                                                          {
+                                                            "name": "Data",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{api.data}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": false
+                                                          },
+                                                          {
+                                                            "name": "Account",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{api.data.account}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": true
+                                                          },
+                                                          {
+                                                            "name": "DueAmt",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{api.data.dueamount}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": true
+                                                          },
+                                                          {
+                                                            "name": "AgentId",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{api.data.agentid}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": true
+                                                          },
+                                                          {
+                                                            "name": "BillNo",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{api.data.billnumber}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": true
+                                                          },
+                                                          {
+                                                            "name": "BillDate",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{api.data.billdate}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": true
+                                                          },
+                                                          {
+                                                            "name": "DueDate",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{api.data.duedate}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": true
+                                                          },
+                                                          {
+                                                            "name": "CustName",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{api.data.customername}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": true
+                                                          },
+                                                          {
+                                                            "name": "FetchBillId",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{api.data.fetchBillID}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": true
+                                                          },
+                                                          {
+                                                            "name": "Status",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{api.data.status}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": true
+                                                          },
+                                                          {
+                                                            "name": "Msg",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{api.data.msg}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": true
+                                                          }
+                                                        ]
+                                                      },
+                                                      "else": {
+                                                        "steps": [
+                                                          {
+                                                            "name": "apiPOB",
+                                                            "module": "api",
+                                                            "action": "send",
+                                                            "options": {
+                                                              "method": "POST",
+                                                              "url": "https://www.payoneapi.com/RechargeAPI/RechargeAPI.aspx",
+                                                              "params": {
+                                                                "MobileNo": "{{6396090835}}",
+                                                                "REFMOBILENO": "{{$_POST.Mobile}}",
+                                                                "APIKey": "{{'NMgYOLeK8DY2XQzkNgJtl6H80sQoLuFXnQP'}}",
+                                                                "REQTYPE": "{{'BILLINFO'}}",
+                                                                "RESPTYPE": "{{'JSON'}}",
+                                                                "CUSTNO": "{{$_POST.AccountNo}}",
+                                                                "SERCODE": "{{GetOpAPICodeFwrd.payone}}",
+                                                                "AMT": "0",
+                                                                "STV": "0",
+                                                                "FIELD1": "{{$_POST.Field1?$_POST.Field1:''}}",
+                                                                "FIELD2": "{{$_POST.Field2?$_POST.Field2:''}}",
+                                                                "FIELD3": "",
+                                                                "FIELD4": "",
+                                                                "FIELD5": "",
+                                                                "PCODE": "{{380054}}",
+                                                                "LAT": "{{23.1003}}",
+                                                                "LONG": "{{72.5501}}"
+                                                              }
+                                                            },
+                                                            "output": false
+                                                          },
+                                                          {
+                                                            "name": "Data",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{apiPOB.data.parseJSON()}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": false
+                                                          },
+                                                          {
+                                                            "name": "Account",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{$_POST.AccountNo}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": true
+                                                          },
+                                                          {
+                                                            "name": "DueAmt",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{Data.BILLAMT}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": true
+                                                          },
+                                                          {
+                                                            "name": "AgentId",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{apiUH.data.agentid}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": true
+                                                          },
+                                                          {
+                                                            "name": "BillNo",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{Data.BILLNO}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": true
+                                                          },
+                                                          {
+                                                            "name": "BillDate",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{Data.BILLDATE}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": true
+                                                          },
+                                                          {
+                                                            "name": "DueDate",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{Data.BILLDUEDATE}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": true
+                                                          },
+                                                          {
+                                                            "name": "CustName",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{Data.CUSTNAME}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": true
+                                                          },
+                                                          {
+                                                            "name": "FetchBillId",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{apiUH.data.fetchBillID}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": true
+                                                          },
+                                                          {
+                                                            "name": "Status",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{(Data.STATUSCODE==0)?'SUCCESS':'FAILED'}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": true
+                                                          },
+                                                          {
+                                                            "name": "Msg",
+                                                            "module": "core",
+                                                            "action": "setvalue",
+                                                            "options": {
+                                                              "value": "{{Data.STATUSMSG}}"
+                                                            },
+                                                            "meta": [],
+                                                            "outputType": "text",
+                                                            "output": true
+                                                          }
+                                                        ]
+                                                      }
+                                                    },
+                                                    "outputType": "boolean"
+                                                  }
+                                                ]
+                                              },
+                                              "else": {
+                                                "steps": [
+                                                  {
+                                                    "name": "Account",
+                                                    "module": "core",
+                                                    "action": "setvalue",
+                                                    "options": {
+                                                      "value": "{{$_POST.AccountNo}}"
+                                                    },
+                                                    "meta": [],
+                                                    "outputType": "text",
+                                                    "output": true
+                                                  },
+                                                  {
+                                                    "name": "DueAmt",
+                                                    "module": "core",
+                                                    "action": "setvalue",
+                                                    "options": {
+                                                      "value": "\n"
+                                                    },
+                                                    "meta": [],
+                                                    "outputType": "text",
+                                                    "output": true
+                                                  },
+                                                  {
+                                                    "name": "AgentId",
+                                                    "module": "core",
+                                                    "action": "setvalue",
+                                                    "options": {
+                                                      "value": "\n"
+                                                    },
+                                                    "meta": [],
+                                                    "outputType": "text",
+                                                    "output": true
+                                                  },
+                                                  {
+                                                    "name": "BillNo",
+                                                    "module": "core",
+                                                    "action": "setvalue",
+                                                    "options": {
+                                                      "value": "\n"
+                                                    },
+                                                    "meta": [],
+                                                    "outputType": "text",
+                                                    "output": true
+                                                  },
+                                                  {
+                                                    "name": "BillDate",
+                                                    "module": "core",
+                                                    "action": "setvalue",
+                                                    "options": {
+                                                      "value": "\n"
+                                                    },
+                                                    "meta": [],
+                                                    "outputType": "text",
+                                                    "output": true
+                                                  },
+                                                  {
+                                                    "name": "DueDate",
+                                                    "module": "core",
+                                                    "action": "setvalue",
+                                                    "options": {
+                                                      "value": "\n"
+                                                    },
+                                                    "meta": [],
+                                                    "outputType": "text",
+                                                    "output": true
+                                                  },
+                                                  {
+                                                    "name": "CustName",
+                                                    "module": "core",
+                                                    "action": "setvalue",
+                                                    "options": {
+                                                      "value": "\n"
+                                                    },
+                                                    "meta": [],
+                                                    "outputType": "text",
+                                                    "output": true
+                                                  },
+                                                  {
+                                                    "name": "FetchBillId",
+                                                    "module": "core",
+                                                    "action": "setvalue",
+                                                    "options": {
+                                                      "value": "\n"
+                                                    },
+                                                    "meta": [],
+                                                    "outputType": "text",
+                                                    "output": true
+                                                  },
+                                                  {
+                                                    "name": "Status",
+                                                    "module": "core",
+                                                    "action": "setvalue",
+                                                    "options": {
+                                                      "value": "FAILED"
+                                                    },
+                                                    "meta": [],
+                                                    "outputType": "text",
+                                                    "output": true
+                                                  },
+                                                  {
+                                                    "name": "Msg",
+                                                    "module": "core",
+                                                    "action": "setvalue",
+                                                    "options": {
+                                                      "value": "Request Id already exists, please try with is unique ReqId"
+                                                    },
+                                                    "meta": [],
+                                                    "output": true,
+                                                    "outputType": "text"
+                                                  }
+                                                ]
+                                              }
+                                            },
+                                            "outputType": "boolean"
+                                          }
+                                        ]
+                                      },
+                                      "else": {
+                                        "steps": [
+                                          {
+                                            "name": "Account",
+                                            "module": "core",
+                                            "action": "setvalue",
+                                            "options": {
+                                              "value": "{{$_POST.AccountNo}}"
+                                            },
+                                            "meta": [],
+                                            "outputType": "text",
+                                            "output": true
+                                          },
+                                          {
+                                            "name": "DueAmt",
+                                            "module": "core",
+                                            "action": "setvalue",
+                                            "options": {
+                                              "value": "\n"
+                                            },
+                                            "meta": [],
+                                            "outputType": "text",
+                                            "output": true
+                                          },
+                                          {
+                                            "name": "AgentId",
+                                            "module": "core",
+                                            "action": "setvalue",
+                                            "options": {
+                                              "value": "\n"
+                                            },
+                                            "meta": [],
+                                            "outputType": "text",
+                                            "output": true
+                                          },
+                                          {
+                                            "name": "BillNo",
+                                            "module": "core",
+                                            "action": "setvalue",
+                                            "options": {
+                                              "value": "\n"
+                                            },
+                                            "meta": [],
+                                            "outputType": "text",
+                                            "output": true
+                                          },
+                                          {
+                                            "name": "BillDate",
+                                            "module": "core",
+                                            "action": "setvalue",
+                                            "options": {
+                                              "value": "\n"
+                                            },
+                                            "meta": [],
+                                            "outputType": "text",
+                                            "output": true
+                                          },
+                                          {
+                                            "name": "DueDate",
+                                            "module": "core",
+                                            "action": "setvalue",
+                                            "options": {
+                                              "value": "\n"
+                                            },
+                                            "meta": [],
+                                            "outputType": "text",
+                                            "output": true
+                                          },
+                                          {
+                                            "name": "CustName",
+                                            "module": "core",
+                                            "action": "setvalue",
+                                            "options": {
+                                              "value": "\n"
+                                            },
+                                            "meta": [],
+                                            "outputType": "text",
+                                            "output": true
+                                          },
+                                          {
+                                            "name": "FetchBillId",
+                                            "module": "core",
+                                            "action": "setvalue",
+                                            "options": {
+                                              "value": "\n"
+                                            },
+                                            "meta": [],
+                                            "outputType": "text",
+                                            "output": true
+                                          },
+                                          {
+                                            "name": "Status",
+                                            "module": "core",
+                                            "action": "setvalue",
+                                            "options": {
+                                              "value": "FAILED"
+                                            },
+                                            "meta": [],
+                                            "outputType": "text",
+                                            "output": true
+                                          },
+                                          {
+                                            "name": "Msg",
+                                            "module": "core",
+                                            "action": "setvalue",
+                                            "options": {
+                                              "value": "IP Address Mismatched! Please try again."
+                                            },
+                                            "meta": [],
+                                            "output": true,
+                                            "outputType": "text"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "outputType": "boolean"
+                                  }
+                                ]
+                              },
+                              "else": {
+                                "steps": [
+                                  {
+                                    "name": "Account",
+                                    "module": "core",
+                                    "action": "setvalue",
+                                    "options": {
+                                      "value": "{{$_POST.AccountNo}}"
+                                    },
+                                    "meta": [],
+                                    "outputType": "text",
+                                    "output": true
+                                  },
+                                  {
+                                    "name": "DueAmt",
+                                    "module": "core",
+                                    "action": "setvalue",
+                                    "options": {
+                                      "value": "\n"
+                                    },
+                                    "meta": [],
+                                    "outputType": "text",
+                                    "output": true
+                                  },
+                                  {
+                                    "name": "AgentId",
+                                    "module": "core",
+                                    "action": "setvalue",
+                                    "options": {
+                                      "value": "\n"
+                                    },
+                                    "meta": [],
+                                    "outputType": "text",
+                                    "output": true
+                                  },
+                                  {
+                                    "name": "BillNo",
+                                    "module": "core",
+                                    "action": "setvalue",
+                                    "options": {
+                                      "value": "\n"
+                                    },
+                                    "meta": [],
+                                    "outputType": "text",
+                                    "output": true
+                                  },
+                                  {
+                                    "name": "BillDate",
+                                    "module": "core",
+                                    "action": "setvalue",
+                                    "options": {
+                                      "value": "\n"
+                                    },
+                                    "meta": [],
+                                    "outputType": "text",
+                                    "output": true
+                                  },
+                                  {
+                                    "name": "DueDate",
+                                    "module": "core",
+                                    "action": "setvalue",
+                                    "options": {
+                                      "value": "\n"
+                                    },
+                                    "meta": [],
+                                    "outputType": "text",
+                                    "output": true
+                                  },
+                                  {
+                                    "name": "CustName",
+                                    "module": "core",
+                                    "action": "setvalue",
+                                    "options": {
+                                      "value": "\n"
+                                    },
+                                    "meta": [],
+                                    "outputType": "text",
+                                    "output": true
+                                  },
+                                  {
+                                    "name": "FetchBillId",
+                                    "module": "core",
+                                    "action": "setvalue",
+                                    "options": {
+                                      "value": "\n"
+                                    },
+                                    "meta": [],
+                                    "outputType": "text",
+                                    "output": true
+                                  },
+                                  {
+                                    "name": "Status",
+                                    "module": "core",
+                                    "action": "setvalue",
+                                    "options": {
+                                      "value": "FAILED"
+                                    },
+                                    "meta": [],
+                                    "outputType": "text",
+                                    "output": true
+                                  },
+                                  {
+                                    "name": "Msg",
+                                    "module": "core",
+                                    "action": "setvalue",
+                                    "options": {
+                                      "value": "Password Mismatched"
+                                    },
+                                    "meta": [],
+                                    "output": true,
+                                    "outputType": "text"
+                                  }
+                                ]
+                              }
+                            },
+                            "outputType": "boolean"
+                          }
+                        ]
+                      },
+                      "else": {
+                        "steps": [
+                          {
+                            "name": "Account",
+                            "module": "core",
+                            "action": "setvalue",
+                            "options": {
+                              "value": "{{$_POST.AccountNo}}"
+                            },
+                            "meta": [],
+                            "outputType": "text",
+                            "output": true
+                          },
+                          {
+                            "name": "DueAmt",
+                            "module": "core",
+                            "action": "setvalue",
+                            "options": {
+                              "value": "\n"
+                            },
+                            "meta": [],
+                            "outputType": "text",
+                            "output": true
+                          },
+                          {
+                            "name": "AgentId",
+                            "module": "core",
+                            "action": "setvalue",
+                            "options": {
+                              "value": "\n"
+                            },
+                            "meta": [],
+                            "outputType": "text",
+                            "output": true
+                          },
+                          {
+                            "name": "BillNo",
+                            "module": "core",
+                            "action": "setvalue",
+                            "options": {
+                              "value": "\n"
+                            },
+                            "meta": [],
+                            "outputType": "text",
+                            "output": true
+                          },
+                          {
+                            "name": "BillDate",
+                            "module": "core",
+                            "action": "setvalue",
+                            "options": {
+                              "value": "\n"
+                            },
+                            "meta": [],
+                            "outputType": "text",
+                            "output": true
+                          },
+                          {
+                            "name": "DueDate",
+                            "module": "core",
+                            "action": "setvalue",
+                            "options": {
+                              "value": "\n"
+                            },
+                            "meta": [],
+                            "outputType": "text",
+                            "output": true
+                          },
+                          {
+                            "name": "CustName",
+                            "module": "core",
+                            "action": "setvalue",
+                            "options": {
+                              "value": "\n"
+                            },
+                            "meta": [],
+                            "outputType": "text",
+                            "output": true
+                          },
+                          {
+                            "name": "FetchBillId",
+                            "module": "core",
+                            "action": "setvalue",
+                            "options": {
+                              "value": "\n"
+                            },
+                            "meta": [],
+                            "outputType": "text",
+                            "output": true
+                          },
+                          {
+                            "name": "Status",
+                            "module": "core",
+                            "action": "setvalue",
+                            "options": {
+                              "value": "FAILED"
+                            },
+                            "meta": [],
+                            "outputType": "text",
+                            "output": true
+                          },
+                          {
+                            "name": "Msg",
+                            "module": "core",
+                            "action": "setvalue",
+                            "options": {
+                              "value": "User does not exists or user inactive, Please contact technical support team"
+                            },
+                            "meta": [],
+                            "outputType": "text",
+                            "output": true
+                          }
+                        ]
+                      }
+                    },
+                    "outputType": "boolean",
+                    "output": false
+                  }
+                ]
+              },
+              "else": {
+                "steps": [
+                  {
+                    "name": "Account",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": "{{$_POST.AccountNo}}"
+                    },
+                    "meta": [],
+                    "outputType": "text",
+                    "output": true
+                  },
+                  {
+                    "name": "DueAmt",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": "\n"
+                    },
+                    "meta": [],
+                    "outputType": "text",
+                    "output": true
+                  },
+                  {
+                    "name": "AgentId",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": "\n"
+                    },
+                    "meta": [],
+                    "outputType": "text",
+                    "output": true
+                  },
+                  {
+                    "name": "BillNo",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": "\n"
+                    },
+                    "meta": [],
+                    "outputType": "text",
+                    "output": true
+                  },
+                  {
+                    "name": "BillDate",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": "\n"
+                    },
+                    "meta": [],
+                    "outputType": "text",
+                    "output": true
+                  },
+                  {
+                    "name": "DueDate",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": "\n"
+                    },
+                    "meta": [],
+                    "outputType": "text",
+                    "output": true
+                  },
+                  {
+                    "name": "CustName",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": "\n"
+                    },
+                    "meta": [],
+                    "outputType": "text",
+                    "output": true
+                  },
+                  {
+                    "name": "FetchBillId",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": "\n"
+                    },
+                    "meta": [],
+                    "outputType": "text",
+                    "output": true
+                  },
+                  {
+                    "name": "Status",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": "FAILED"
+                    },
+                    "meta": [],
+                    "outputType": "text",
+                    "output": true
+                  },
+                  {
+                    "name": "Msg",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": "You are missing mandatory fields, please check API document."
+                    },
+                    "meta": [],
+                    "output": true,
+                    "outputType": "text"
+                  }
+                ]
+              }
+            },
+            "outputType": "boolean"
+          }
+        },
+        "catch": {
+          "steps": [
+            {
+              "name": "Account",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": "{{$_POST.AccountNo}}"
+              },
+              "meta": [],
+              "outputType": "text",
+              "output": true
+            },
+            {
+              "name": "DueAmt",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": "\n"
+              },
+              "meta": [],
+              "outputType": "text",
+              "output": true
+            },
+            {
+              "name": "AgentId",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": "\n"
+              },
+              "meta": [],
+              "outputType": "text",
+              "output": true
+            },
+            {
+              "name": "BillNo",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": "\n"
+              },
+              "meta": [],
+              "outputType": "text",
+              "output": true
+            },
+            {
+              "name": "BillDate",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": "\n"
+              },
+              "meta": [],
+              "outputType": "text",
+              "output": true
+            },
+            {
+              "name": "DueDate",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": "\n"
+              },
+              "meta": [],
+              "outputType": "text",
+              "output": true
+            },
+            {
+              "name": "CustName",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": "\n"
+              },
+              "meta": [],
+              "outputType": "text",
+              "output": true
+            },
+            {
+              "name": "FetchBillId",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": "\n"
+              },
+              "meta": [],
+              "outputType": "text",
+              "output": true
+            },
+            {
+              "name": "Status",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": "FAILED"
+              },
+              "meta": [],
+              "outputType": "text",
+              "output": true
+            },
+            {
+              "name": "Msg",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": "Suspicious Activity! Please Try Again"
+              },
+              "meta": [],
+              "output": true,
+              "outputType": "text"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,276 @@
+<!-- Wappler include head-page="layouts/main" fontawesome_5="cdn" bootstrap5="local" is="dmx-app" id="dashboard" appconnect="local"  components="{dmxBootstrap5Navigation:{},dmxBootstrap5Modal:{}}" -->
+<meta name="ac:route" content="/dashboard">
+<dmx-serverconnect id="scKYCFetch" url="api/Users/UserKycFetch"></dmx-serverconnect>
+<dmx-value id="varKYC" dmx-bind:value="(scLoginUser.data.LoginUserInfo.kyc_status==3||scLoginUser.data.LoginUserInfo.kyc_status==2)?0:1"></dmx-value>
+<main>
+    <div class="container-fluid">
+        <h1 class="mt-4">Dashboard
+            <span class="border-3 ms-2 spinner-border spinner-border-sm" role="status" dmx-show="scLoginUser.state.executing"></span>
+        </h1>
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item active">Dashboard / {{scLoginUser.data.LoginUserInfo.user_id}} / {{scLoginUser.data.LoginUserInfo.id}}</li>
+        </ol>
+        <!-- <div class="row">
+            <div class="col-12 col-sm-6" dmx-show="!scLoginUser.data.LoginUserInfo.user_tpin">
+                <form is="dmx-serverconnect-form" id="formBlankTPIN" method="post" action="api/Users/BlankTPin" dmx-generator="bootstrap5" dmx-form-type="vertical" dmx-on:success="scNotif.success('TPIN Successfully Updated'); formBlankTPIN.reset(); browserMain.goto('dashboard')" dmx-on:error="scNotif.warning('An error occurred'); ">
+                    <div class="mb-3">
+                        <label class="fs-bold">Update TPIN</label>
+                        <input type="number" class="form-control" name="user_tpin" placeholder="Enter 4 digit TPin">
+                    </div>
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div> -->
+        <div class="row">
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-primary text-white mb-4">
+                    <div class="card-body">Opening Balance &emsp;<b class="fs-6">
+                            {{scLoginUser.data.OpeningBalance[0].opening_balance ? scLoginUser.data.OpeningBalance[0].opening_balance.toNumber().formatCurrency('₹', '.', ',', 2) : 0.formatCurrency('₹', '.', ',', 2)}}</b></div>
+                    <!--div class="card-footer d-flex align-items-center justify-content-between">
+                        <a class="small text-white stretched-link" href="#">View Details</a>
+                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                    </div-->
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-warning text-white mb-4">
+                    <div class="card-body">Payment Load &emsp;<b class="fs-6">{{scLoginUser.data.PaymentLoad[0].loadamt ? scLoginUser.data.PaymentLoad[0].loadamt.formatCurrency('₹', '.', ',', 2) : 0.formatCurrency('₹', '.', ',', 2)}}</b></div>
+
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-success text-white mb-4">
+                    <div class="card-body">Usage &emsp;<b class="fs-6">{{scLoginUser.data.UsageAmt[0].usageamt ? scLoginUser.data.UsageAmt[0].usageamt.formatCurrency('₹', '.', ',', 2) : 0.formatCurrency('₹', '.', ',', 2)}}</b></div>
+                    <!--div class="card-footer d-flex align-items-center justify-content-between">
+                        <a class="small text-white stretched-link" href="#">View Details</a>
+                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                    </div-->
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-danger text-white mb-4">
+                    <div class="card-body">Closing Balance &emsp;<b class="fs-6">
+                            {{scLoginUser.data.ClosingBalance[0].closing_balance ? scLoginUser.data.ClosingBalance[0].closing_balance.toNumber().formatCurrency('₹', '.', ',', 2) : 0.formatCurrency('₹', '.', ',', 2)}}</b></div>
+                    <!--div class="card-footer d-flex align-items-center justify-content-between">
+                        <a class="small text-white stretched-link" href="#">View Details</a>
+                        <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                    </div-->
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xl-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-chart-area mr-1"></i>
+                        Area Chart Example
+                    </div>
+                    <div class="card-body"><canvas id="myAreaChart" width="100%" height="40"></canvas></div>
+                </div>
+            </div>
+            <div class="col-xl-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-chart-bar mr-1"></i>
+                        Bar Chart Example
+                    </div>
+                    <div class="card-body"><canvas id="myBarChart" width="100%" height="40"></canvas></div>
+                </div>
+            </div>
+        </div>
+        <!-- div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-table mr-1"></i>
+                DataTable Example
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Position</th>
+                                <th>Office</th>
+                                <th>Age</th>
+                                <th>Start date</th>
+                                <th>Salary</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <th>Name</th>
+                                <th>Position</th>
+                                <th>Office</th>
+                                <th>Age</th>
+                                <th>Start date</th>
+                                <th>Salary</th>
+                            </tr>
+                        </tfoot>
+                        <tbody>
+                            <tr>
+                                <td>Tiger Nixon</td>
+                                <td>System Architect</td>
+                                <td>Edinburgh</td>
+                                <td>61</td>
+                                <td>2011/04/25</td>
+                                <td>$320,800</td>
+                            </tr>
+                            <tr>
+                                <td>Garrett Winters</td>
+                                <td>Accountant</td>
+                                <td>Tokyo</td>
+                                <td>63</td>
+                                <td>2011/07/25</td>
+                                <td>$170,750</td>
+                            </tr>
+                            <tr>
+                                <td>Ashton Cox</td>
+                                <td>Junior Technical Author</td>
+                                <td>San Francisco</td>
+                                <td>66</td>
+                                <td>2009/01/12</td>
+                                <td>$86,000</td>
+                            </tr>
+                            <tr>
+                                <td>Cedric Kelly</td>
+                                <td>Senior Javascript Developer</td>
+                                <td>Edinburgh</td>
+                                <td>22</td>
+                                <td>2012/03/29</td>
+                                <td>$433,060</td>
+                            </tr>
+                            <tr>
+                                <td>Airi Satou</td>
+                                <td>Accountant</td>
+                                <td>Tokyo</td>
+                                <td>33</td>
+                                <td>2008/11/28</td>
+                                <td>$162,700</td>
+                            </tr>
+                            <tr>
+                                <td>Brielle Williamson</td>
+                                <td>Integration Specialist</td>
+                                <td>New York</td>
+                                <td>61</td>
+                                <td>2012/12/02</td>
+                                <td>$372,000</td>
+                            </tr>
+                            <tr>
+                                <td>Herrod Chandler</td>
+                                <td>Sales Assistant</td>
+                                <td>San Francisco</td>
+                                <td>59</td>
+                                <td>2012/08/06</td>
+                                <td>$137,500</td>
+                            </tr>
+                            <tr>
+                                <td>Rhona Davidson</td>
+                                <td>Integration Specialist</td>
+                                <td>Tokyo</td>
+                                <td>55</td>
+                                <td>2010/10/14</td>
+                                <td>$327,900</td>
+                            </tr>
+                            <tr>
+                                <td>Lael Greer</td>
+                                <td>Systems Administrator</td>
+                                <td>London</td>
+                                <td>21</td>
+                                <td>2009/02/27</td>
+                                <td>$103,500</td>
+                            </tr>
+                            <tr>
+                                <td>Jonas Alexander</td>
+                                <td>Developer</td>
+                                <td>San Francisco</td>
+                                <td>30</td>
+                                <td>2010/07/14</td>
+                                <td>$86,500</td>
+                            </tr>
+                            <tr>
+                                <td>Donna Snider</td>
+                                <td>Customer Support</td>
+                                <td>New York</td>
+                                <td>27</td>
+                                <td>2011/01/25</td>
+                                <td>$112,000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div-->
+        <div class="modal fade" id="modalKYC" is="dmx-bs5-modal" tabindex="-1" dmx-bind:show="varKYC.value==1?false:true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Upload KYC Documents <span class="border-3 ms-2 spinner-border spinner-border-sm" role="status" dmx-show="scMobileOffer.state.executing"></span></h4>
+                        <button type="button" class="close btn-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form is="dmx-serverconnect-form" id="formAddEditKyc" method="post" action="api/Users/UserKYCUpload" dmx-generator="bootstrap5" dmx-form-type="horizontal" dmx-on:success="scNotif.success('KYC Updated'); formAddEditKyc.reset(); scKYCFetch.load();modalKYC.hide()" dmx-on:error="scNotif.warning('An error occurred');" dmx-on:forbidden="scNotif.warning(lastError.response)" dmx-on:unauthorized="scNotif.warning(lastError.response)" dmx-on:invalid="scNotif.warning(lastError.message)">
+                            <div class="row mx-0">
+                                <div class="col-12">
+                                    <div class="mb-3 row">
+                                        <label for="input1" class="col-sm-3 col-form-label">Image Upload</label>
+                                        <div class="col-sm-6">
+                                            <input type="file" class="form-control" id="input1" name="profile" aria-describedby="input1_help">
+                                            <small id="input1_help" class="form-text text-muted">Upload recent pasport size photograph</small>
+                                        </div>
+                                        <div class="col-3 px-0 text-center">
+                                            <img id="ImagePic" width="80" dmx-bind:src="input1.file.dataUrl ? input1.file.dataUrl : scKYCFetch.data.GetKycDoc.profile_pic" dmx-show="input1.value ? input1.value : scKYCFetch.data.GetKycDoc.profile_pic" height="80">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="mb-3 row">
+                                        <label for="input2" class="col-sm-3 col-form-label">PAN Card</label>
+                                        <div class="col-sm-6">
+                                            <input type="file" class="form-control" id="input2" name="pan_card" aria-describedby="input2_help">
+                                            <small id="input2_help" class="form-text text-muted">Upload registered PAN card</small>
+                                        </div>
+                                        <div class="col-3 px-0 text-center">
+                                            <img id="imgPAN" width="100" dmx-bind:src="input2.file.dataUrl ? input2.file.dataUrl : scKYCFetch.data.GetKycDoc.pan_card" dmx-show="input2.value ? input2.value : scKYCFetch.data.GetKycDoc.pan_card" height="80">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="mb-3 row">
+                                        <label for="input3" class="col-sm-3 col-form-label">AADHAR Card(Front)</label>
+                                        <div class="col-sm-6">
+                                            <input type="file" class="form-control" id="input3" name="front_aadhar" aria-describedby="input3_help">
+                                            <small id="input3_help" class="form-text text-muted">Upload Front side of AADHAR card</small>
+                                        </div>
+                                        <div class="col-3 px-0 text-center">
+                                            <img id="ImageAADHAR" width="100" dmx-bind:src="input3.file.dataUrl ? input3.file.dataUrl : scKYCFetch.data.GetKycDoc.aadhar_front" dmx-show="input3.value ? input3.value : scKYCFetch.data.GetKycDoc.aadhar_front" height="80">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="mb-3 row">
+                                        <label for="input4" class="col-sm-3 col-form-label">AADHAR Card(Back)</label>
+                                        <div class="col-sm-6">
+                                            <input type="file" class="form-control" id="input4" name="back_aadhar" aria-describedby="input4_help">
+                                            <small id="input4_help" class="form-text text-muted">Upload Back side of AADHAR card</small>
+                                        </div>
+                                        <div class="col-3 px-0 text-center">
+                                            <img id="ImageLogo" width="100" dmx-bind:src="input4.file.dataUrl ? input4.file.dataUrl : scKYCFetch.data.GetKycDoc.aadhar_back" dmx-show="input4.value ? input4.value : scKYCFetch.data.GetKycDoc.aadhar_back" height="80">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 text-center" dmx-hide="varKYC.value==1">
+                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary close" data-bs-dismiss="modal" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>

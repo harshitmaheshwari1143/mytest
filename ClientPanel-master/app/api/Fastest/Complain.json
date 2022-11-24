@@ -1,0 +1,693 @@
+{
+  "meta": {
+    "options": {
+      "linkedForm": "formMobileRecharge"
+    },
+    "$_POST": [
+      {
+        "type": "text",
+        "options": {
+          "rules": {}
+        },
+        "name": "UserId"
+      },
+      {
+        "type": "text",
+        "options": {
+          "rules": {}
+        },
+        "name": "Token"
+      },
+      {
+        "type": "text",
+        "options": {
+          "rules": {}
+        },
+        "name": "Remarks"
+      },
+      {
+        "type": "text",
+        "options": {
+          "rules": {}
+        },
+        "name": "ReqId"
+      }
+    ]
+  },
+  "exec": {
+    "steps": {
+      "name": "",
+      "module": "core",
+      "action": "trycatch",
+      "options": {
+        "try": {
+          "steps": {
+            "name": "",
+            "module": "core",
+            "action": "condition",
+            "options": {
+              "if": "{{$_POST.UserId&&$_POST.Token&&$_POST.ReqId}}",
+              "then": {
+                "steps": [
+                  {
+                    "name": "UserIP",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": "{{$_SERVER.REMOTE_ADDR}}"
+                    },
+                    "meta": [],
+                    "outputType": "text",
+                    "output": false
+                  },
+                  {
+                    "name": "getSalt",
+                    "module": "dbconnector",
+                    "action": "single",
+                    "options": {
+                      "connection": "postgres_gcpServer",
+                      "sql": {
+                        "type": "SELECT",
+                        "columns": [
+                          {
+                            "table": "t_api_token",
+                            "column": "salt",
+                            "alias": "getSaltvalue"
+                          },
+                          {
+                            "table": "t_api_token",
+                            "column": "ip_address1"
+                          },
+                          {
+                            "table": "t_api_token",
+                            "column": "ip_address2"
+                          },
+                          {
+                            "table": "t_api_token",
+                            "column": "ip_address3"
+                          }
+                        ],
+                        "table": {
+                          "name": "t_api_token"
+                        },
+                        "joins": [],
+                        "query": "SELECT salt AS getSaltvalue, ip_address1, ip_address2, ip_address3\nFROM t_api_token\nWHERE user_id = :P1 /* {{$_POST.UserId}} */ AND api_token = :P2 /* {{$_POST.Token}} */ AND status = 1",
+                        "params": [
+                          {
+                            "operator": "equal",
+                            "type": "expression",
+                            "name": ":P1",
+                            "value": "{{$_POST.UserId}}"
+                          },
+                          {
+                            "operator": "equal",
+                            "type": "expression",
+                            "name": ":P2",
+                            "value": "{{$_POST.Token}}"
+                          }
+                        ],
+                        "wheres": {
+                          "condition": "AND",
+                          "rules": [
+                            {
+                              "id": "t_api_token.user_id",
+                              "field": "t_api_token.user_id",
+                              "type": "double",
+                              "operator": "equal",
+                              "value": "{{$_POST.UserId}}",
+                              "data": {
+                                "table": "t_api_token",
+                                "column": "user_id",
+                                "type": "number",
+                                "columnObj": {
+                                  "type": "integer",
+                                  "primary": false,
+                                  "nullable": false,
+                                  "unique": false,
+                                  "name": "user_id"
+                                }
+                              },
+                              "operation": "="
+                            },
+                            {
+                              "id": "t_api_token.api_token",
+                              "field": "t_api_token.api_token",
+                              "type": "string",
+                              "operator": "equal",
+                              "value": "{{$_POST.Token}}",
+                              "data": {
+                                "table": "t_api_token",
+                                "column": "api_token",
+                                "type": "text",
+                                "columnObj": {
+                                  "type": "string",
+                                  "primary": false,
+                                  "nullable": false,
+                                  "maxLength": -5,
+                                  "unique": false,
+                                  "name": "api_token"
+                                }
+                              },
+                              "operation": "="
+                            },
+                            {
+                              "id": "t_api_token.status",
+                              "field": "t_api_token.status",
+                              "type": "double",
+                              "operator": "equal",
+                              "value": 1,
+                              "data": {
+                                "table": "t_api_token",
+                                "column": "status",
+                                "type": "number",
+                                "columnObj": {
+                                  "type": "integer",
+                                  "primary": false,
+                                  "nullable": true,
+                                  "unique": false,
+                                  "name": "status"
+                                }
+                              },
+                              "operation": "="
+                            }
+                          ],
+                          "conditional": null,
+                          "valid": true
+                        },
+                        "primary": "id"
+                      }
+                    },
+                    "output": false,
+                    "meta": [
+                      {
+                        "type": "text",
+                        "name": "getSaltvalue"
+                      },
+                      {
+                        "type": "text",
+                        "name": "ip_address1"
+                      },
+                      {
+                        "type": "text",
+                        "name": "ip_address2"
+                      },
+                      {
+                        "type": "text",
+                        "name": "ip_address3"
+                      }
+                    ],
+                    "outputType": "object"
+                  },
+                  {
+                    "name": "",
+                    "module": "core",
+                    "action": "condition",
+                    "options": {
+                      "if": "{{getSalt.getSaltvalue}}",
+                      "then": {
+                        "steps": {
+                          "name": "",
+                          "module": "core",
+                          "action": "condition",
+                          "options": {
+                            "if": "{{(getSalt.ip_address1==UserIP)||(getSalt.ip_address2==UserIP)||(getSalt.ip_address3==UserIP)}}",
+                            "then": {
+                              "steps": [
+                                {
+                                  "name": "GetComplain",
+                                  "module": "dbconnector",
+                                  "action": "single",
+                                  "options": {
+                                    "connection": "postgres_gcpServer",
+                                    "sql": {
+                                      "type": "SELECT",
+                                      "columns": [
+                                        {
+                                          "table": "tt_recharge_trans",
+                                          "column": "id",
+                                          "alias": "tr_table_id",
+                                          "aggregate": ""
+                                        }
+                                      ],
+                                      "table": {
+                                        "name": "tt_recharge_trans"
+                                      },
+                                      "joins": [],
+                                      "wheres": {
+                                        "condition": "AND",
+                                        "rules": [
+                                          {
+                                            "id": "tt_recharge_trans.tr_id",
+                                            "field": "tt_recharge_trans.tr_id",
+                                            "type": "string",
+                                            "operator": "equal",
+                                            "value": "{{$_POST.ReqId}}",
+                                            "data": {
+                                              "table": "tt_recharge_trans",
+                                              "column": "tr_id",
+                                              "type": "text",
+                                              "columnObj": {
+                                                "type": "string",
+                                                "primary": false,
+                                                "nullable": true,
+                                                "maxLength": -5,
+                                                "unique": false,
+                                                "name": "tr_id"
+                                              }
+                                            },
+                                            "operation": "="
+                                          },
+                                          {
+                                            "id": "tt_recharge_trans.user_id",
+                                            "field": "tt_recharge_trans.user_id",
+                                            "type": "double",
+                                            "operator": "equal",
+                                            "value": "{{$_POST.UserId}}",
+                                            "data": {
+                                              "table": "tt_recharge_trans",
+                                              "column": "user_id",
+                                              "type": "number",
+                                              "columnObj": {
+                                                "type": "integer",
+                                                "primary": false,
+                                                "nullable": false,
+                                                "unique": false,
+                                                "name": "user_id"
+                                              }
+                                            },
+                                            "operation": "="
+                                          },
+                                          {
+                                            "id": "tt_recharge_trans.extra2",
+                                            "field": "tt_recharge_trans.extra2",
+                                            "type": "string",
+                                            "operator": "is_null",
+                                            "value": null,
+                                            "data": {
+                                              "table": "tt_recharge_trans",
+                                              "column": "extra2",
+                                              "type": "text",
+                                              "columnObj": {
+                                                "type": "string",
+                                                "primary": false,
+                                                "nullable": true,
+                                                "maxLength": -5,
+                                                "unique": false,
+                                                "name": "extra2"
+                                              }
+                                            },
+                                            "operation": "IS NULL"
+                                          }
+                                        ],
+                                        "conditional": null,
+                                        "valid": true
+                                      },
+                                      "query": "SELECT id AS tr_table_id\nFROM tt_recharge_trans\nWHERE tr_id = :P1 /* {{$_POST.ReqId}} */ AND user_id = :P2 /* {{$_POST.UserId}} */ AND extra2 IS NULL",
+                                      "params": [
+                                        {
+                                          "operator": "equal",
+                                          "type": "expression",
+                                          "name": ":P1",
+                                          "value": "{{$_POST.ReqId}}"
+                                        },
+                                        {
+                                          "operator": "equal",
+                                          "type": "expression",
+                                          "name": ":P2",
+                                          "value": "{{$_POST.UserId}}"
+                                        }
+                                      ],
+                                      "primary": "id"
+                                    }
+                                  },
+                                  "output": false,
+                                  "meta": [
+                                    {
+                                      "type": "number",
+                                      "name": "tr_table_id"
+                                    }
+                                  ],
+                                  "outputType": "object"
+                                },
+                                {
+                                  "name": "",
+                                  "module": "core",
+                                  "action": "condition",
+                                  "options": {
+                                    "if": "{{GetComplain.tr_table_id>0}}",
+                                    "then": {
+                                      "steps": [
+                                        {
+                                          "name": "ComplainAdd",
+                                          "module": "dbupdater",
+                                          "action": "insert",
+                                          "options": {
+                                            "connection": "postgres_gcpServer",
+                                            "sql": {
+                                              "type": "insert",
+                                              "values": [
+                                                {
+                                                  "table": "t_ticket",
+                                                  "column": "user_id",
+                                                  "type": "number",
+                                                  "value": "{{$_POST.UserId}}"
+                                                },
+                                                {
+                                                  "table": "t_ticket",
+                                                  "column": "support_type",
+                                                  "type": "text",
+                                                  "value": "{{'Recharge Complain'}}"
+                                                },
+                                                {
+                                                  "table": "t_ticket",
+                                                  "column": "message",
+                                                  "type": "text",
+                                                  "value": "{{$_POST.Remarks}}"
+                                                },
+                                                {
+                                                  "table": "t_ticket",
+                                                  "column": "tran_id",
+                                                  "type": "text",
+                                                  "value": "{{GetComplain.tr_table_id}}"
+                                                },
+                                                {
+                                                  "table": "t_ticket",
+                                                  "column": "status",
+                                                  "type": "text",
+                                                  "value": "{{1}}"
+                                                },
+                                                {
+                                                  "table": "t_ticket",
+                                                  "column": "adddate",
+                                                  "type": "datetime",
+                                                  "value": "{{NOW}}"
+                                                },
+                                                {
+                                                  "table": "t_ticket",
+                                                  "column": "created_on",
+                                                  "type": "datetime",
+                                                  "value": "{{NOW}}"
+                                                }
+                                              ],
+                                              "table": "t_ticket",
+                                              "returning": "id",
+                                              "query": "INSERT INTO t_ticket\n(user_id, support_type, message, tran_id, status, adddate, created_on) VALUES (:P1 /* {{$_POST.UserId}} */, :P2 /* {{'Recharge Complain'}} */, :P3 /* {{$_POST.Remarks}} */, :P4 /* {{GetComplain.tr_table_id}} */, :P5 /* {{1}} */, :P6 /* {{NOW}} */, :P7 /* {{NOW}} */)",
+                                              "params": [
+                                                {
+                                                  "name": ":P1",
+                                                  "type": "expression",
+                                                  "value": "{{$_POST.UserId}}"
+                                                },
+                                                {
+                                                  "name": ":P2",
+                                                  "type": "expression",
+                                                  "value": "{{'Recharge Complain'}}"
+                                                },
+                                                {
+                                                  "name": ":P3",
+                                                  "type": "expression",
+                                                  "value": "{{$_POST.Remarks}}"
+                                                },
+                                                {
+                                                  "name": ":P4",
+                                                  "type": "expression",
+                                                  "value": "{{GetComplain.tr_table_id}}"
+                                                },
+                                                {
+                                                  "name": ":P5",
+                                                  "type": "expression",
+                                                  "value": "{{1}}"
+                                                },
+                                                {
+                                                  "name": ":P6",
+                                                  "type": "expression",
+                                                  "value": "{{NOW}}"
+                                                },
+                                                {
+                                                  "name": ":P7",
+                                                  "type": "expression",
+                                                  "value": "{{NOW}}"
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          "meta": [
+                                            {
+                                              "name": "identity",
+                                              "type": "text"
+                                            },
+                                            {
+                                              "name": "affected",
+                                              "type": "number"
+                                            }
+                                          ],
+                                          "output": false
+                                        },
+                                        {
+                                          "name": "RechTransUp",
+                                          "module": "dbupdater",
+                                          "action": "update",
+                                          "options": {
+                                            "connection": "postgres_gcpServer",
+                                            "sql": {
+                                              "type": "update",
+                                              "values": [
+                                                {
+                                                  "table": "tt_recharge_trans",
+                                                  "column": "extra2",
+                                                  "type": "text",
+                                                  "value": "1"
+                                                }
+                                              ],
+                                              "table": "tt_recharge_trans",
+                                              "wheres": {
+                                                "condition": "AND",
+                                                "rules": [
+                                                  {
+                                                    "id": "id",
+                                                    "field": "id",
+                                                    "type": "double",
+                                                    "operator": "equal",
+                                                    "value": "{{GetComplain.tr_table_id}}",
+                                                    "data": {
+                                                      "column": "id"
+                                                    },
+                                                    "operation": "="
+                                                  },
+                                                  {
+                                                    "id": "user_id",
+                                                    "field": "user_id",
+                                                    "type": "double",
+                                                    "operator": "equal",
+                                                    "value": "{{$_POST.UserId}}",
+                                                    "data": {
+                                                      "column": "user_id"
+                                                    },
+                                                    "operation": "="
+                                                  }
+                                                ],
+                                                "conditional": null,
+                                                "valid": true
+                                              },
+                                              "query": "UPDATE tt_recharge_trans\nSET extra2 = '1'\nWHERE id = :P1 /* {{GetComplain.tr_table_id}} */ AND user_id = :P2 /* {{$_POST.UserId}} */",
+                                              "params": [
+                                                {
+                                                  "operator": "equal",
+                                                  "type": "expression",
+                                                  "name": ":P1",
+                                                  "value": "{{GetComplain.tr_table_id}}"
+                                                },
+                                                {
+                                                  "operator": "equal",
+                                                  "type": "expression",
+                                                  "name": ":P2",
+                                                  "value": "{{$_POST.UserId}}"
+                                                }
+                                              ],
+                                              "returning": "id"
+                                            }
+                                          },
+                                          "meta": [
+                                            {
+                                              "name": "affected",
+                                              "type": "number"
+                                            }
+                                          ],
+                                          "output": false
+                                        },
+                                        {
+                                          "name": "Resp",
+                                          "module": "core",
+                                          "action": "setvalue",
+                                          "options": {
+                                            "value": "Complain Successfully Raised"
+                                          },
+                                          "meta": [],
+                                          "output": true,
+                                          "outputType": "text"
+                                        },
+                                        {
+                                          "name": "Status",
+                                          "module": "core",
+                                          "action": "setvalue",
+                                          "options": {
+                                            "value": 200
+                                          },
+                                          "meta": [],
+                                          "output": true,
+                                          "outputType": "text"
+                                        }
+                                      ]
+                                    },
+                                    "else": {
+                                      "steps": [
+                                        {
+                                          "name": "Resp",
+                                          "module": "core",
+                                          "action": "setvalue",
+                                          "options": {
+                                            "value": "Complain Already Raised"
+                                          },
+                                          "meta": [],
+                                          "output": true,
+                                          "outputType": "text"
+                                        },
+                                        {
+                                          "name": "Status",
+                                          "module": "core",
+                                          "action": "setvalue",
+                                          "options": {
+                                            "value": 403
+                                          },
+                                          "meta": [],
+                                          "output": true,
+                                          "outputType": "text"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "outputType": "boolean"
+                                }
+                              ]
+                            },
+                            "else": {
+                              "steps": [
+                                {
+                                  "name": "Resp",
+                                  "module": "core",
+                                  "action": "setvalue",
+                                  "options": {
+                                    "value": "{{'Unauthorized user with IP '+UserIP}}"
+                                  },
+                                  "meta": [],
+                                  "outputType": "text",
+                                  "output": true
+                                },
+                                {
+                                  "name": "Status",
+                                  "module": "core",
+                                  "action": "setvalue",
+                                  "options": {
+                                    "value": 403
+                                  },
+                                  "meta": [],
+                                  "output": true,
+                                  "outputType": "text"
+                                }
+                              ]
+                            }
+                          },
+                          "outputType": "boolean"
+                        }
+                      },
+                      "else": {
+                        "steps": [
+                          {
+                            "name": "Resp",
+                            "module": "core",
+                            "action": "setvalue",
+                            "options": {
+                              "value": "Unauthorized Access! Parameters Mismatched"
+                            },
+                            "meta": [],
+                            "outputType": "text",
+                            "output": true
+                          },
+                          {
+                            "name": "Status",
+                            "module": "core",
+                            "action": "setvalue",
+                            "options": {
+                              "value": 403
+                            },
+                            "meta": [],
+                            "output": true,
+                            "outputType": "text"
+                          }
+                        ]
+                      }
+                    },
+                    "outputType": "boolean"
+                  }
+                ]
+              },
+              "else": {
+                "steps": [
+                  {
+                    "name": "Resp",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": "You are missing mandatory fields, please check API document."
+                    },
+                    "meta": [],
+                    "outputType": "text",
+                    "output": true
+                  },
+                  {
+                    "name": "Status",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": 403
+                    },
+                    "meta": [],
+                    "output": true,
+                    "outputType": "text"
+                  }
+                ]
+              }
+            },
+            "outputType": "boolean"
+          }
+        },
+        "catch": {
+          "steps": [
+            {
+              "name": "Resp",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": "Suspicious Activity, Try Again"
+              },
+              "meta": [],
+              "outputType": "text",
+              "output": true
+            },
+            {
+              "name": "Status",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": 403
+              },
+              "meta": [],
+              "output": true,
+              "outputType": "text"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "options": {
+          "rules": {}
+        },
+        "name": "tel"
+      },
+      {
+        "type": "text",
+        "options": {
+          "rules": {}
+        },
+        "name": "op"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "",
+        "module": "auth",
+        "action": "restrict",
+        "options": {
+          "provider": "security",
+          "permissions": [
+            "write"
+          ],
+          "loginUrl": "/login",
+          "forbiddenUrl": "/403-forbidden"
+        }
+      },
+      {
+        "name": "identity",
+        "module": "auth",
+        "action": "identify",
+        "options": {
+          "provider": "security"
+        },
+        "output": false,
+        "meta": []
+      },
+      {
+        "name": "api",
+        "module": "api",
+        "action": "send",
+        "options": {
+          "url": "https://www.mplan.in/api/plans.php",
+          "params": {
+            "apikey": "{{'e9a86475efe3e85a90eba68c740c1c73'}}",
+            "offer": "{{'roffer'}}",
+            "tel": "{{$_GET.tel}}",
+            "operator": "{{($_GET.op=='Vodafone-Idea')?'Vodafone':($_GET.op=='Bsnl Recharge'||$_GET.op=='Bsnl Special')?'BSNL':$_GET.op}}"
+          }
+        },
+        "output": false
+      },
+      {
+        "name": "ROfferApi",
+        "module": "core",
+        "action": "setvalue",
+        "options": {
+          "value": "{{api.data.parseJSON()}}"
+        },
+        "meta": [],
+        "outputType": "text",
+        "output": true
+      }
+    ]
+  }
+}

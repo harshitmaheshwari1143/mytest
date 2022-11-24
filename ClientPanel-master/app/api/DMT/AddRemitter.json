@@ -1,0 +1,224 @@
+{
+  "meta": {
+    "options": {
+      "linkedFile": "/views/dmt-service.ejs",
+      "linkedForm": "formAddRem"
+    },
+    "$_POST": [
+      {
+        "type": "text",
+        "fieldName": "RemMobileAdd",
+        "options": {
+          "rules": {
+            "core:required": {
+              "param": ""
+            },
+            "core:number": {
+              "param": ""
+            }
+          }
+        },
+        "name": "RemMobileAdd"
+      },
+      {
+        "type": "text",
+        "fieldName": "RemFName",
+        "options": {
+          "rules": {
+            "core:required": {
+              "param": ""
+            }
+          }
+        },
+        "name": "RemFName"
+      },
+      {
+        "type": "text",
+        "fieldName": "RemLName",
+        "options": {
+          "rules": {
+            "core:required": {
+              "param": ""
+            }
+          }
+        },
+        "name": "RemLName"
+      },
+      {
+        "type": "text",
+        "fieldName": "RemAddress",
+        "options": {
+          "rules": {
+            "core:required": {
+              "param": ""
+            }
+          }
+        },
+        "name": "RemAddress"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "",
+        "module": "auth",
+        "action": "restrict",
+        "options": {
+          "provider": "security",
+          "permissions": [
+            "write"
+          ],
+          "loginUrl": "/login",
+          "forbiddenUrl": "/403-forbidden"
+        }
+      },
+      {
+        "name": "apiAddRemitter",
+        "module": "api",
+        "action": "send",
+        "options": {
+          "url": "https://vitefintech.com/viteapi/dmt/addCustomer",
+          "method": "POST",
+          "data": {
+            "title": "{{'Mr'}}",
+            "first_name": "{{$_POST.RemFName}}",
+            "last_name": "{{$_POST.RemLName}}",
+            "phone_no": "{{$_POST.RemMobileAdd}}",
+            "address": "{{$_POST.RemAddress}}",
+            "api_key": "{{'SWPA001'}}"
+          }
+        },
+        "output": false
+      },
+      {
+        "name": "RemitterAdd",
+        "module": "core",
+        "action": "setvalue",
+        "options": {
+          "value": "{{apiAddRemitter.data.parseJSON()}}"
+        },
+        "meta": [],
+        "outputType": "text",
+        "output": true
+      },
+      {
+        "name": "",
+        "module": "core",
+        "action": "condition",
+        "options": {
+          "if": "{{RemitterAdd.status==true}}",
+          "then": {
+            "steps": {
+              "name": "AddRemitter",
+              "module": "dbupdater",
+              "action": "insert",
+              "options": {
+                "connection": "postgres_gcpServer",
+                "sql": {
+                  "type": "insert",
+                  "values": [
+                    {
+                      "table": "dmt_remitter",
+                      "column": "remitter_id",
+                      "type": "text",
+                      "value": "{{RemitterAdd.Data.RemitterCode}}"
+                    },
+                    {
+                      "table": "dmt_remitter",
+                      "column": "remit_name",
+                      "type": "text",
+                      "value": "{{$_POST.RemFName+' '+$_POST.RemLName}}"
+                    },
+                    {
+                      "table": "dmt_remitter",
+                      "column": "remit_mobile",
+                      "type": "text",
+                      "value": "{{$_POST.RemMobileAdd}}"
+                    },
+                    {
+                      "table": "dmt_remitter",
+                      "column": "remit_pin",
+                      "type": "text",
+                      "value": "{{$_POST.RemAddress}}"
+                    },
+                    {
+                      "table": "dmt_remitter",
+                      "column": "rem_verify",
+                      "type": "boolean",
+                      "value": "{{true}}"
+                    },
+                    {
+                      "table": "dmt_remitter",
+                      "column": "created_on",
+                      "type": "datetime",
+                      "value": "{{NOW}}"
+                    },
+                    {
+                      "table": "dmt_remitter",
+                      "column": "status",
+                      "type": "text",
+                      "value": "{{'Active'}}"
+                    }
+                  ],
+                  "table": "dmt_remitter",
+                  "returning": "id",
+                  "query": "INSERT INTO dmt_remitter\n(remitter_id, remit_name, remit_mobile, remit_pin, rem_verify, created_on, status) VALUES (:P1 /* {{RemitterAdd.Data.RemitterCode}} */, :P2 /* {{$_POST.RemFName+' '+$_POST.RemLName}} */, :P3 /* {{$_POST.RemMobileAdd}} */, :P4 /* {{$_POST.RemAddress}} */, :P5 /* {{true}} */, :P6 /* {{NOW}} */, :P7 /* {{'Active'}} */)",
+                  "params": [
+                    {
+                      "name": ":P1",
+                      "type": "expression",
+                      "value": "{{RemitterAdd.Data.RemitterCode}}"
+                    },
+                    {
+                      "name": ":P2",
+                      "type": "expression",
+                      "value": "{{$_POST.RemFName+' '+$_POST.RemLName}}"
+                    },
+                    {
+                      "name": ":P3",
+                      "type": "expression",
+                      "value": "{{$_POST.RemMobileAdd}}"
+                    },
+                    {
+                      "name": ":P4",
+                      "type": "expression",
+                      "value": "{{$_POST.RemAddress}}"
+                    },
+                    {
+                      "name": ":P5",
+                      "type": "expression",
+                      "value": "{{true}}"
+                    },
+                    {
+                      "name": ":P6",
+                      "type": "expression",
+                      "value": "{{NOW}}"
+                    },
+                    {
+                      "name": ":P7",
+                      "type": "expression",
+                      "value": "{{'Active'}}"
+                    }
+                  ]
+                }
+              },
+              "meta": [
+                {
+                  "name": "identity",
+                  "type": "text"
+                },
+                {
+                  "name": "affected",
+                  "type": "number"
+                }
+              ],
+              "output": false
+            }
+          }
+        },
+        "outputType": "boolean"
+      }
+    ]
+  }
+}

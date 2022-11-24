@@ -1,0 +1,218 @@
+{
+  "meta": {
+    "options": {
+      "linkedFile": "/views/dmt-service-cf.ejs",
+      "linkedForm": "formDelBen"
+    },
+    "$_POST": [
+      {
+        "type": "text",
+        "fieldName": "BenIdDel",
+        "options": {
+          "rules": {
+            "core:required": {
+              "param": ""
+            }
+          }
+        },
+        "name": "BenIdDel"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "",
+        "module": "auth",
+        "action": "restrict",
+        "options": {
+          "provider": "security",
+          "permissions": [
+            "write"
+          ],
+          "loginUrl": "/login",
+          "forbiddenUrl": "/403-forbidden"
+        }
+      },
+      {
+        "name": "identity",
+        "module": "auth",
+        "action": "identify",
+        "options": {
+          "provider": "security"
+        },
+        "output": true,
+        "meta": []
+      },
+      {
+        "name": "apiAuth",
+        "module": "api",
+        "action": "send",
+        "options": {
+          "url": "https://payout-api.cashfree.com/payout/v1/authorize",
+          "method": "POST",
+          "headers": {
+            "X-Client-Id": "{{'CF249483CBOGO8LD73N0IMAPH69G'}}",
+            "X-Client-Secret": "{{'61108264d27a79b942f341c637d04216425887b5'}}",
+            "X-Cf-Signature": ""
+          }
+        },
+        "output": false
+      },
+      {
+        "name": "",
+        "module": "core",
+        "action": "condition",
+        "options": {
+          "if": "{{apiAuth.data.status=='SUCCESS'}}",
+          "then": {
+            "steps": [
+              {
+                "name": "apiDelBenef",
+                "module": "api",
+                "action": "send",
+                "options": {
+                  "url": "https://payout-api.cashfree.com/payout/v1/removeBeneficiary",
+                  "method": "POST",
+                  "headers": {
+                    "Authorization": "{{'Bearer '+apiAuth.data.data.token}}",
+                    "Content-Type": ""
+                  },
+                  "dataType": "json",
+                  "data": {
+                    "beneId": "{{$_POST.BenIdDel}}"
+                  }
+                },
+                "output": false
+              },
+              {
+                "name": "",
+                "module": "core",
+                "action": "condition",
+                "options": {
+                  "if": "{{apiDelBenef.data.status=='SUCCESS'}}",
+                  "then": {
+                    "steps": [
+                      {
+                        "name": "aeps_benef_cashfree",
+                        "module": "dbupdater",
+                        "action": "update",
+                        "options": {
+                          "connection": "postgres_gcpServer",
+                          "sql": {
+                            "type": "update",
+                            "values": [
+                              {
+                                "table": "aeps_beneficiary_cashfree",
+                                "column": "deleted_on",
+                                "type": "datetime",
+                                "value": "{{NOW}}"
+                              }
+                            ],
+                            "table": "aeps_beneficiary_cashfree",
+                            "wheres": {
+                              "condition": "AND",
+                              "rules": [
+                                {
+                                  "id": "parent_id",
+                                  "field": "parent_id",
+                                  "type": "double",
+                                  "operator": "equal",
+                                  "value": "{{identity}}",
+                                  "data": {
+                                    "column": "parent_id"
+                                  },
+                                  "operation": "="
+                                },
+                                {
+                                  "id": "benef_id",
+                                  "field": "benef_id",
+                                  "type": "string",
+                                  "operator": "equal",
+                                  "value": "{{$_POST.BenIdDel}}",
+                                  "data": {
+                                    "column": "benef_id"
+                                  },
+                                  "operation": "="
+                                }
+                              ],
+                              "conditional": null,
+                              "valid": true
+                            },
+                            "returning": "id",
+                            "query": "UPDATE aeps_beneficiary_cashfree\nSET deleted_on = :P1 /* {{NOW}} */\nWHERE parent_id = :P2 /* {{identity}} */ AND benef_id = :P3 /* {{$_POST.BenIdDel}} */",
+                            "params": [
+                              {
+                                "name": ":P1",
+                                "type": "expression",
+                                "value": "{{NOW}}"
+                              },
+                              {
+                                "operator": "equal",
+                                "type": "expression",
+                                "name": ":P2",
+                                "value": "{{identity}}"
+                              },
+                              {
+                                "operator": "equal",
+                                "type": "expression",
+                                "name": ":P3",
+                                "value": "{{$_POST.BenIdDel}}"
+                              }
+                            ]
+                          }
+                        },
+                        "meta": [
+                          {
+                            "name": "affected",
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Resp",
+                        "module": "core",
+                        "action": "response",
+                        "options": {
+                          "status": 200,
+                          "data": "Record Deleted Successfully!"
+                        },
+                        "output": true
+                      }
+                    ]
+                  },
+                  "else": {
+                    "steps": {
+                      "name": "Resp",
+                      "module": "core",
+                      "action": "response",
+                      "options": {
+                        "status": 403,
+                        "data": "Record Couldn't Deleted ! Please try again"
+                      },
+                      "output": true
+                    }
+                  }
+                },
+                "outputType": "boolean"
+              }
+            ]
+          },
+          "else": {
+            "steps": {
+              "name": "Resp",
+              "module": "core",
+              "action": "response",
+              "options": {
+                "status": 403,
+                "data": "Unauthorized token, contact technical support team."
+              },
+              "output": true
+            }
+          }
+        },
+        "outputType": "boolean"
+      }
+    ]
+  }
+}

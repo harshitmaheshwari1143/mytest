@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "options": {
+      "linkedFile": "/views/dmt-service.ejs",
+      "linkedForm": "formGetBeneficiary"
+    },
+    "$_POST": [
+      {
+        "type": "number",
+        "fieldName": "CustMobile",
+        "options": {
+          "rules": {
+            "core:required": {
+              "param": ""
+            },
+            "core:number": {}
+          }
+        },
+        "name": "CustMobile"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "",
+        "module": "auth",
+        "action": "restrict",
+        "options": {
+          "provider": "security",
+          "permissions": [
+            "write"
+          ],
+          "loginUrl": "/login",
+          "forbiddenUrl": "/403-forbidden"
+        }
+      },
+      {
+        "name": "apiGetBeneficiary",
+        "module": "api",
+        "action": "send",
+        "options": {
+          "url": "https://vitefintech.com/viteapi/dmt",
+          "params": {
+            "api_key": "{{'SWPA001'}}",
+            "mobile": "{{$_POST.CustMobile}}"
+          }
+        },
+        "output": false
+      },
+      {
+        "name": "Recipients",
+        "module": "core",
+        "action": "setvalue",
+        "options": {
+          "value": "{{apiGetBeneficiary.data.parseJSON()}}"
+        },
+        "meta": [],
+        "outputType": "text",
+        "output": true
+      },
+      {
+        "name": "",
+        "module": "core",
+        "action": "condition",
+        "options": {
+          "if": "{{Recipients.Status=='SUCCESS'}}",
+          "then": {
+            "steps": [
+              {
+                "name": "api",
+                "module": "api",
+                "action": "send",
+                "options": {
+                  "url": "https://vitefintech.com/viteapi/dmt/beneficiarylist",
+                  "params": {
+                    "api_key": "{{'SWPA001'}}",
+                    "mobile": "{{$_POST.CustMobile}}"
+                  }
+                },
+                "output": false
+              },
+              {
+                "name": "apiBeneficiary",
+                "module": "core",
+                "action": "setvalue",
+                "options": {
+                  "value": "{{api.data.parseJSON()}}"
+                },
+                "meta": [],
+                "outputType": "text",
+                "output": true
+              }
+            ]
+          }
+        },
+        "outputType": "boolean"
+      }
+    ]
+  }
+}

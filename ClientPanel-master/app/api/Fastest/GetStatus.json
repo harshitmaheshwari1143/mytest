@@ -1,0 +1,990 @@
+{
+  "meta": {
+    "options": {
+      "linkedForm": "formMobileRecharge"
+    },
+    "$_POST": [
+      {
+        "type": "text",
+        "options": {
+          "rules": {}
+        },
+        "name": "UserId"
+      },
+      {
+        "type": "text",
+        "options": {
+          "rules": {}
+        },
+        "name": "Token"
+      },
+      {
+        "type": "text",
+        "options": {
+          "rules": {}
+        },
+        "name": "ReqId"
+      }
+    ],
+    "$_SERVER": [
+      {
+        "type": "text",
+        "name": "REMOTE_ADDR"
+      }
+    ]
+  },
+  "exec": {
+    "steps": {
+      "name": "",
+      "module": "core",
+      "action": "trycatch",
+      "options": {
+        "try": {
+          "steps": {
+            "name": "",
+            "module": "core",
+            "action": "condition",
+            "options": {
+              "if": "{{$_POST.UserId&&$_POST.Token&&$_POST.ReqId}}",
+              "then": {
+                "steps": [
+                  {
+                    "name": "UserIP",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": "{{$_SERVER.REMOTE_ADDR}}"
+                    },
+                    "meta": [],
+                    "outputType": "text",
+                    "output": false
+                  },
+                  {
+                    "name": "getSalt",
+                    "module": "dbconnector",
+                    "action": "single",
+                    "options": {
+                      "connection": "postgres_gcpServer",
+                      "sql": {
+                        "type": "SELECT",
+                        "columns": [
+                          {
+                            "table": "t_api_token",
+                            "column": "ip_address1"
+                          },
+                          {
+                            "table": "t_api_token",
+                            "column": "ip_address2"
+                          },
+                          {
+                            "table": "t_api_token",
+                            "column": "ip_address3"
+                          },
+                          {
+                            "table": "t_api_token",
+                            "column": "salt",
+                            "alias": "getSaltvalue"
+                          }
+                        ],
+                        "table": {
+                          "name": "t_api_token"
+                        },
+                        "joins": [],
+                        "query": "SELECT ip_address1, ip_address2, ip_address3, salt AS getSaltvalue\nFROM t_api_token\nWHERE user_id = :P1 /* {{$_POST.UserId}} */ AND api_token = :P2 /* {{$_POST.Token}} */ AND status = 1",
+                        "params": [
+                          {
+                            "operator": "equal",
+                            "type": "expression",
+                            "name": ":P1",
+                            "value": "{{$_POST.UserId}}"
+                          },
+                          {
+                            "operator": "equal",
+                            "type": "expression",
+                            "name": ":P2",
+                            "value": "{{$_POST.Token}}"
+                          }
+                        ],
+                        "wheres": {
+                          "condition": "AND",
+                          "rules": [
+                            {
+                              "id": "t_api_token.user_id",
+                              "field": "t_api_token.user_id",
+                              "type": "double",
+                              "operator": "equal",
+                              "value": "{{$_POST.UserId}}",
+                              "data": {
+                                "table": "t_api_token",
+                                "column": "user_id",
+                                "type": "number",
+                                "columnObj": {
+                                  "type": "integer",
+                                  "primary": false,
+                                  "nullable": false,
+                                  "unique": false,
+                                  "name": "user_id"
+                                }
+                              },
+                              "operation": "="
+                            },
+                            {
+                              "id": "t_api_token.api_token",
+                              "field": "t_api_token.api_token",
+                              "type": "string",
+                              "operator": "equal",
+                              "value": "{{$_POST.Token}}",
+                              "data": {
+                                "table": "t_api_token",
+                                "column": "api_token",
+                                "type": "text",
+                                "columnObj": {
+                                  "type": "string",
+                                  "primary": false,
+                                  "nullable": false,
+                                  "maxLength": -5,
+                                  "unique": false,
+                                  "name": "api_token"
+                                }
+                              },
+                              "operation": "="
+                            },
+                            {
+                              "id": "t_api_token.status",
+                              "field": "t_api_token.status",
+                              "type": "double",
+                              "operator": "equal",
+                              "value": 1,
+                              "data": {
+                                "table": "t_api_token",
+                                "column": "status",
+                                "type": "number",
+                                "columnObj": {
+                                  "type": "integer",
+                                  "primary": false,
+                                  "nullable": true,
+                                  "unique": false,
+                                  "name": "status"
+                                }
+                              },
+                              "operation": "="
+                            }
+                          ],
+                          "conditional": null,
+                          "valid": true
+                        },
+                        "primary": "id"
+                      }
+                    },
+                    "output": false,
+                    "meta": [
+                      {
+                        "type": "text",
+                        "name": "ip_address1"
+                      },
+                      {
+                        "type": "text",
+                        "name": "ip_address2"
+                      },
+                      {
+                        "type": "text",
+                        "name": "ip_address3"
+                      },
+                      {
+                        "type": "text",
+                        "name": "getSaltvalue"
+                      }
+                    ],
+                    "outputType": "object"
+                  },
+                  {
+                    "name": "",
+                    "module": "core",
+                    "action": "condition",
+                    "options": {
+                      "if": "{{getSalt.getSaltvalue}}",
+                      "then": {
+                        "steps": {
+                          "name": "",
+                          "module": "core",
+                          "action": "condition",
+                          "options": {
+                            "if": "{{(getSalt.ip_address1==UserIP)||(getSalt.ip_address2==UserIP)||(getSalt.ip_address3==UserIP)}}",
+                            "then": {
+                              "steps": [
+                                {
+                                  "name": "Status",
+                                  "module": "dbconnector",
+                                  "action": "single",
+                                  "options": {
+                                    "sql": {
+                                      "type": "SELECT",
+                                      "columns": [
+                                        {
+                                          "table": "tt_recharge_trans",
+                                          "column": "closing_balance"
+                                        },
+                                        {
+                                          "table": "tt_recharge_trans",
+                                          "column": "status"
+                                        },
+                                        {
+                                          "table": "tt_recharge_trans",
+                                          "column": "user_number"
+                                        },
+                                        {
+                                          "table": "tt_recharge_trans",
+                                          "column": "operator_ref"
+                                        },
+                                        {
+                                          "table": "tt_recharge_trans",
+                                          "column": "api_ref"
+                                        },
+                                        {
+                                          "table": "tt_recharge_trans",
+                                          "column": "extra1"
+                                        },
+                                        {
+                                          "table": "tt_recharge_trans",
+                                          "column": "tr_id"
+                                        },
+                                        {
+                                          "table": "tt_recharge_trans",
+                                          "column": "amount"
+                                        },
+                                        {
+                                          "table": "tt_recharge_trans",
+                                          "column": "is_processed"
+                                        },
+                                        {
+                                          "table": "tt_recharge_trans",
+                                          "column": "id",
+                                          "alias": "order_id"
+                                        }
+                                      ],
+                                      "table": {
+                                        "name": "tt_recharge_trans"
+                                      },
+                                      "joins": [],
+                                      "wheres": {
+                                        "condition": "AND",
+                                        "rules": [
+                                          {
+                                            "id": "tt_recharge_trans.tr_id",
+                                            "field": "tt_recharge_trans.tr_id",
+                                            "type": "string",
+                                            "operator": "equal",
+                                            "value": "{{$_POST.ReqId}}",
+                                            "data": {
+                                              "table": "tt_recharge_trans",
+                                              "column": "tr_id",
+                                              "type": "text",
+                                              "columnObj": {
+                                                "type": "string",
+                                                "primary": false,
+                                                "nullable": true,
+                                                "maxLength": -5,
+                                                "unique": false,
+                                                "name": "tr_id"
+                                              }
+                                            },
+                                            "operation": "="
+                                          }
+                                        ],
+                                        "conditional": null,
+                                        "valid": true
+                                      },
+                                      "query": "SELECT closing_balance, status, user_number, operator_ref, api_ref, extra1, tr_id, amount, is_processed, id AS order_id\nFROM tt_recharge_trans\nWHERE tr_id = :P1 /* {{$_POST.ReqId}} */",
+                                      "params": [
+                                        {
+                                          "operator": "equal",
+                                          "type": "expression",
+                                          "name": ":P1",
+                                          "value": "{{$_POST.ReqId}}"
+                                        }
+                                      ],
+                                      "primary": "id"
+                                    },
+                                    "connection": "postgres_gcpServer"
+                                  },
+                                  "output": false,
+                                  "meta": [
+                                    {
+                                      "type": "text",
+                                      "name": "closing_balance"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "name": "status"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "name": "user_number"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "name": "operator_ref"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "name": "api_ref"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "name": "extra1"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "name": "tr_id"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "name": "amount"
+                                    },
+                                    {
+                                      "type": "text",
+                                      "name": "is_processed"
+                                    },
+                                    {
+                                      "type": "number",
+                                      "name": "order_id"
+                                    }
+                                  ],
+                                  "type": "dbconnector_single",
+                                  "outputType": "object"
+                                },
+                                {
+                                  "name": "",
+                                  "module": "core",
+                                  "action": "condition",
+                                  "options": {
+                                    "if": "{{Status.status}}",
+                                    "then": {
+                                      "steps": [
+                                        {
+                                          "name": "ReqId",
+                                          "module": "core",
+                                          "action": "setvalue",
+                                          "options": {
+                                            "value": "{{Status.tr_id}}"
+                                          },
+                                          "meta": [],
+                                          "outputType": "text",
+                                          "output": true
+                                        },
+                                        {
+                                          "name": "Amount",
+                                          "module": "core",
+                                          "action": "setvalue",
+                                          "options": {
+                                            "value": "{{Status.amount}}"
+                                          },
+                                          "meta": [],
+                                          "outputType": "text",
+                                          "output": true
+                                        },
+                                        {
+                                          "name": "Account",
+                                          "module": "core",
+                                          "action": "setvalue",
+                                          "options": {
+                                            "value": "{{Status.user_number}}"
+                                          },
+                                          "meta": [],
+                                          "outputType": "text",
+                                          "output": true
+                                        },
+                                        {
+                                          "name": "order_id",
+                                          "module": "core",
+                                          "action": "setvalue",
+                                          "options": {
+                                            "value": "{{Status.order_id}}"
+                                          },
+                                          "meta": [],
+                                          "outputType": "text",
+                                          "output": true
+                                        },
+                                        {
+                                          "name": "apistatus",
+                                          "module": "core",
+                                          "action": "setvalue",
+                                          "options": {
+                                            "value": "{{Status.status}}"
+                                          },
+                                          "meta": [],
+                                          "outputType": "text",
+                                          "output": true
+                                        },
+                                        {
+                                          "name": "api_ref",
+                                          "module": "core",
+                                          "action": "setvalue",
+                                          "options": {
+                                            "value": "{{Status.api_ref}}"
+                                          },
+                                          "meta": [],
+                                          "output": true,
+                                          "outputType": "text"
+                                        },
+                                        {
+                                          "name": "apifiredid",
+                                          "module": "core",
+                                          "action": "setvalue",
+                                          "options": {
+                                            "value": "{{Status.is_processed}}"
+                                          },
+                                          "meta": [],
+                                          "output": true,
+                                          "outputType": "text"
+                                        },
+                                        {
+                                          "name": "remarks",
+                                          "module": "core",
+                                          "action": "setvalue",
+                                          "options": {
+                                            "value": "{{Status.operator_ref}}"
+                                          },
+                                          "meta": [],
+                                          "outputType": "text",
+                                          "output": true
+                                        },
+                                        {
+                                          "name": "ec",
+                                          "module": "core",
+                                          "action": "setvalue",
+                                          "options": {
+                                            "value": "{{Status.extra1}}"
+                                          },
+                                          "meta": [],
+                                          "outputType": "text",
+                                          "output": true
+                                        }
+                                      ]
+                                    },
+                                    "else": {
+                                      "steps": [
+                                        {
+                                          "name": "ReqId",
+                                          "module": "core",
+                                          "action": "setvalue",
+                                          "options": {
+                                            "value": "{{$_POST.ReqId}}"
+                                          },
+                                          "meta": [],
+                                          "outputType": "text",
+                                          "output": true
+                                        },
+                                        {
+                                          "name": "Amount",
+                                          "module": "core",
+                                          "action": "setvalue",
+                                          "options": {
+                                            "value": "\n"
+                                          },
+                                          "meta": [],
+                                          "outputType": "text",
+                                          "output": true
+                                        },
+                                        {
+                                          "name": "order_id",
+                                          "module": "core",
+                                          "action": "setvalue",
+                                          "options": {
+                                            "value": "\n"
+                                          },
+                                          "meta": [],
+                                          "outputType": "text",
+                                          "output": true
+                                        },
+                                        {
+                                          "name": "Account",
+                                          "module": "core",
+                                          "action": "setvalue",
+                                          "options": {
+                                            "value": "\n"
+                                          },
+                                          "meta": [],
+                                          "outputType": "text",
+                                          "output": true
+                                        },
+                                        {
+                                          "name": "apistatus",
+                                          "module": "core",
+                                          "action": "setvalue",
+                                          "options": {
+                                            "value": "FAILED"
+                                          },
+                                          "meta": [],
+                                          "outputType": "text",
+                                          "output": true
+                                        },
+                                        {
+                                          "name": "api_ref",
+                                          "module": "core",
+                                          "action": "setvalue",
+                                          "options": {
+                                            "value": "\n"
+                                          },
+                                          "meta": [],
+                                          "output": true,
+                                          "outputType": "text"
+                                        },
+                                        {
+                                          "name": "remarks",
+                                          "module": "core",
+                                          "action": "setvalue",
+                                          "options": {
+                                            "value": "{{'No such record found with ReqId: '+$_POST.ReqId}}"
+                                          },
+                                          "meta": [],
+                                          "outputType": "text",
+                                          "output": true
+                                        },
+                                        {
+                                          "name": "ec",
+                                          "module": "core",
+                                          "action": "setvalue",
+                                          "options": {
+                                            "value": 403
+                                          },
+                                          "meta": [],
+                                          "outputType": "text",
+                                          "output": true
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "outputType": "boolean"
+                                }
+                              ]
+                            },
+                            "else": {
+                              "steps": [
+                                {
+                                  "name": "ReqId",
+                                  "module": "core",
+                                  "action": "setvalue",
+                                  "options": {
+                                    "value": "{{$_POST.ReqId}}"
+                                  },
+                                  "meta": [],
+                                  "outputType": "text",
+                                  "output": true
+                                },
+                                {
+                                  "name": "Account",
+                                  "module": "core",
+                                  "action": "setvalue",
+                                  "options": {
+                                    "value": " "
+                                  },
+                                  "meta": [],
+                                  "outputType": "text",
+                                  "output": true
+                                },
+                                {
+                                  "name": "Amount",
+                                  "module": "core",
+                                  "action": "setvalue",
+                                  "options": {
+                                    "value": " "
+                                  },
+                                  "meta": [],
+                                  "outputType": "text",
+                                  "output": true
+                                },
+                                {
+                                  "name": "order_id",
+                                  "module": "core",
+                                  "action": "setvalue",
+                                  "options": {
+                                    "value": " "
+                                  },
+                                  "meta": [],
+                                  "outputType": "text",
+                                  "output": true
+                                },
+                                {
+                                  "name": "apistatus",
+                                  "module": "core",
+                                  "action": "setvalue",
+                                  "options": {
+                                    "value": "FAILED"
+                                  },
+                                  "meta": [],
+                                  "outputType": "text",
+                                  "output": true
+                                },
+                                {
+                                  "name": "api_ref",
+                                  "module": "core",
+                                  "action": "setvalue",
+                                  "options": {
+                                    "value": " "
+                                  },
+                                  "meta": [],
+                                  "output": true,
+                                  "outputType": "text"
+                                },
+                                {
+                                  "name": "apifiredid",
+                                  "module": "core",
+                                  "action": "setvalue",
+                                  "options": {
+                                    "value": " "
+                                  },
+                                  "meta": [],
+                                  "output": true,
+                                  "outputType": "text"
+                                },
+                                {
+                                  "name": "remarks",
+                                  "module": "core",
+                                  "action": "setvalue",
+                                  "options": {
+                                    "value": "{{'Unauthorized user with IP '+UserIP}}"
+                                  },
+                                  "meta": [],
+                                  "outputType": "text",
+                                  "output": true
+                                },
+                                {
+                                  "name": "ec",
+                                  "module": "core",
+                                  "action": "setvalue",
+                                  "options": {
+                                    "value": 403
+                                  },
+                                  "meta": [],
+                                  "outputType": "text",
+                                  "output": true
+                                }
+                              ]
+                            }
+                          },
+                          "outputType": "boolean"
+                        }
+                      },
+                      "else": {
+                        "steps": [
+                          {
+                            "name": "ReqId",
+                            "module": "core",
+                            "action": "setvalue",
+                            "options": {
+                              "value": "{{$_POST.ReqId}}"
+                            },
+                            "meta": [],
+                            "outputType": "text",
+                            "output": true
+                          },
+                          {
+                            "name": "Account",
+                            "module": "core",
+                            "action": "setvalue",
+                            "options": {
+                              "value": " "
+                            },
+                            "meta": [],
+                            "outputType": "text",
+                            "output": true
+                          },
+                          {
+                            "name": "Amount",
+                            "module": "core",
+                            "action": "setvalue",
+                            "options": {
+                              "value": " "
+                            },
+                            "meta": [],
+                            "outputType": "text",
+                            "output": true
+                          },
+                          {
+                            "name": "order_id",
+                            "module": "core",
+                            "action": "setvalue",
+                            "options": {
+                              "value": " "
+                            },
+                            "meta": [],
+                            "outputType": "text",
+                            "output": true
+                          },
+                          {
+                            "name": "apistatus",
+                            "module": "core",
+                            "action": "setvalue",
+                            "options": {
+                              "value": "FAILED"
+                            },
+                            "meta": [],
+                            "outputType": "text",
+                            "output": true
+                          },
+                          {
+                            "name": "api_ref",
+                            "module": "core",
+                            "action": "setvalue",
+                            "options": {
+                              "value": " "
+                            },
+                            "meta": [],
+                            "output": true,
+                            "outputType": "text"
+                          },
+                          {
+                            "name": "apifiredid",
+                            "module": "core",
+                            "action": "setvalue",
+                            "options": {
+                              "value": " "
+                            },
+                            "meta": [],
+                            "output": true,
+                            "outputType": "text"
+                          },
+                          {
+                            "name": "remarks",
+                            "module": "core",
+                            "action": "setvalue",
+                            "options": {
+                              "value": "Unauthorized Access!"
+                            },
+                            "meta": [],
+                            "output": true,
+                            "outputType": "text"
+                          },
+                          {
+                            "name": "ec",
+                            "module": "core",
+                            "action": "setvalue",
+                            "options": {
+                              "value": 403
+                            },
+                            "meta": [],
+                            "outputType": "text",
+                            "output": true
+                          }
+                        ]
+                      }
+                    },
+                    "outputType": "boolean"
+                  }
+                ]
+              },
+              "else": {
+                "steps": [
+                  {
+                    "name": "ReqId",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": "{{$_POST.ReqId}}"
+                    },
+                    "meta": [],
+                    "outputType": "text",
+                    "output": true
+                  },
+                  {
+                    "name": "Account",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": " "
+                    },
+                    "meta": [],
+                    "outputType": "text",
+                    "output": true
+                  },
+                  {
+                    "name": "Amount",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": " "
+                    },
+                    "meta": [],
+                    "outputType": "text",
+                    "output": true
+                  },
+                  {
+                    "name": "order_id",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": " "
+                    },
+                    "meta": [],
+                    "outputType": "text",
+                    "output": true
+                  },
+                  {
+                    "name": "apistatus",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": "FAILED"
+                    },
+                    "meta": [],
+                    "outputType": "text",
+                    "output": true
+                  },
+                  {
+                    "name": "api_ref",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": " "
+                    },
+                    "meta": [],
+                    "output": true,
+                    "outputType": "text"
+                  },
+                  {
+                    "name": "apifiredid",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": " "
+                    },
+                    "meta": [],
+                    "output": true,
+                    "outputType": "text"
+                  },
+                  {
+                    "name": "remarks",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": "You are missing mandatory fields, please check API document"
+                    },
+                    "meta": [],
+                    "output": true,
+                    "outputType": "text"
+                  },
+                  {
+                    "name": "ec",
+                    "module": "core",
+                    "action": "setvalue",
+                    "options": {
+                      "value": 403
+                    },
+                    "meta": [],
+                    "outputType": "text",
+                    "output": true
+                  }
+                ]
+              }
+            },
+            "outputType": "boolean"
+          }
+        },
+        "catch": {
+          "steps": [
+            {
+              "name": "ReqId",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": "{{$_POST.ReqId}}"
+              },
+              "meta": [],
+              "outputType": "text",
+              "output": true
+            },
+            {
+              "name": "Account",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": " "
+              },
+              "meta": [],
+              "outputType": "text",
+              "output": true
+            },
+            {
+              "name": "Amount",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": " "
+              },
+              "meta": [],
+              "outputType": "text",
+              "output": true
+            },
+            {
+              "name": "order_id",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": " "
+              },
+              "meta": [],
+              "outputType": "text",
+              "output": true
+            },
+            {
+              "name": "apistatus",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": "FAILED"
+              },
+              "meta": [],
+              "outputType": "text",
+              "output": true
+            },
+            {
+              "name": "api_ref",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": " "
+              },
+              "meta": [],
+              "output": true,
+              "outputType": "text"
+            },
+            {
+              "name": "apifiredid",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": " "
+              },
+              "meta": [],
+              "output": true,
+              "outputType": "text"
+            },
+            {
+              "name": "remarks",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": "Suspicious Activity, Try Again"
+              },
+              "meta": [],
+              "output": true,
+              "outputType": "text"
+            },
+            {
+              "name": "ec",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": 403
+              },
+              "meta": [],
+              "outputType": "text",
+              "output": true
+            }
+          ]
+        }
+      }
+    }
+  }
+}

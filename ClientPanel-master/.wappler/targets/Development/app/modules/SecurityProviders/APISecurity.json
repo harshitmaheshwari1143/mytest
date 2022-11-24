@@ -1,0 +1,35 @@
+{
+  "name": "APISecurity",
+  "module": "auth",
+  "action": "provider",
+  "options": {
+    "secret": "W8yq2VVqjITPICU",
+    "provider": "Database",
+    "connection": "postgres_gcpServer",
+    "users": {
+      "table": "m_users",
+      "identity": "id",
+      "username": "id",
+      "password": "blank4"
+    },
+    "permissions": {
+      "write": {
+        "table": "m_users",
+        "identity": "id",
+        "conditions": [
+          {
+            "column": "u_status",
+            "operator": "=",
+            "value": "1"
+          }
+        ]
+      }
+    }
+  },
+  "meta": [
+    {
+      "name": "identity",
+      "type": "text"
+    }
+  ]
+}

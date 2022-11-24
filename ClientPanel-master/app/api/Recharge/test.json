@@ -1,0 +1,72 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "api",
+        "module": "api",
+        "action": "send",
+        "options": {
+          "headers": {
+            "Cookie": "{{'ci_session=4447f63ddbf1ee96ee53d3c68d372d6582afcfea'}}"
+          },
+          "params": {
+            "partnerId": "{{'SWPA001'}}",
+            "Client-Secret": "{{'KZ5T687kgzwMuvlCY6345799c9a1f0'}}"
+          },
+          "method": "POST",
+          "url": "https://vitefintech.com/viteapi/auth/token",
+          "dataType": "x-www-form-urlencoded",
+          "data": {
+            "partnerId": "{{'SWPA001'}}",
+            "Client-Secret": "{{'KZ5T687kgzwMuvlCY6345799c9a1f0'}}"
+          }
+        },
+        "output": false
+      },
+      {
+        "name": "APIToken",
+        "module": "core",
+        "action": "setvalue",
+        "options": {
+          "value": "{{api.data.parseJSON()}}"
+        },
+        "meta": [],
+        "outputType": "text"
+      },
+      {
+        "name": "",
+        "module": "core",
+        "action": "condition",
+        "options": {
+          "if": "{{APIToken.data.status==true}}",
+          "then": {
+            "steps": {
+              "name": "token",
+              "module": "core",
+              "action": "setvalue",
+              "options": {
+                "value": "{{APIToken.data.token}}"
+              },
+              "meta": [],
+              "outputType": "text",
+              "output": true
+            }
+          }
+        },
+        "outputType": "boolean"
+      }
+    ]
+  }
+}

@@ -1,0 +1,73 @@
+<!-- Wappler include head-page="layouts/main" fontawesome_5="cdn" bootstrap5="local" is="dmx-app" id="AEPSCommisionReport" appConnect="local" components="{dmxDataTraversal:{},dmxDatePicker:{},dmxStateManagement:{}}" -->
+<meta name="ac:route" content="/AEPS-Commision-Report">
+<dmx-query-manager id="qm"></dmx-query-manager>
+<dmx-serverconnect id="scAEPSCommReport" url="api/Reports/AEPSParentComm" dmx-param:fromdate="content.formPendingDate.daterange.start" dmx-param:todate="content.formPendingDate.daterange.end"></dmx-serverconnect>
+
+<dmx-data-view id="dvAEPSCommReport" dmx-bind:data="content.scAEPSCommReport.data.GetCommision.data" filter="(crdr_type.lowercase().contains(formSearchUser.Search.value.lowercase()) || tr_type.lowercase().contains(formSearchUser.Search.value.lowercase()) || tr_date.contains(formSearchUser.Search.value))"></dmx-data-view>
+<dmx-data-detail id="ddAEPSCommReport" dmx-bind:data="dvAEPSCommReport.data" key="id"></dmx-data-detail>
+<div class="row align-items-center justify-content-between px-4 mb-3 sd-secondary-header mx-0">
+    <div class="col-12 col-md-auto me-auto ps-4">
+        <h1 class="ms-md-1 mt-md-3 text-dark fs-2 sd-fw-800 d-flex align-items-center">
+            AEPS Commision Report
+            <span class="border-3 ms-2 spinner-border spinner-border-sm" role="status" dmx-show="scAEPSCommReport.state.executing"></span>
+        </h1>
+    </div>
+    <div class="col-auto order-2 order-md-1 d-flex align-items-center justify-content-start justify-content-md-center px-0 px-lg-2">
+        <form id="formPendingDate">
+            <label class="sw-datepicker">
+                <span class="btn bg-light"><img src="assets/images/icons/calendar.svg" class="img-fluid" width="20px"></span>
+                <input is="dmx-date-range-picker" format="DD MMM YY" class="" placeholder="Nov 2021 - Dec 2021" id="daterange" dmx-bind:startdate="dateNow.datetime.addDays(0)" dmx-bind:enddate="dateNow.datetime.formatDate('yyyy-MM-dd 23:59:59')" autoapply="true">
+            </label>
+        </form>
+    </div>
+    <div class="col-auto order-1 order-md-3 d-flex align-items-center justify-content-center">
+        <form id="formSearchUser" class="sd-search-form">
+            <div class="d-flex justify-content-end mb-3 mb-lg-0 mb-md-0">
+                <input type="text" class="form-control sd-search-input rounded-pill" id="Search" name="Search" placeholder="Search">
+                <span class="bg-transparent btn position-absolute px-1 py-1"><i class="fas fa-search mb-1 mb-xl-0"></i></span>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="container px-4" id="Recharges">
+    <div class="card">
+        <div class="card-header sw-bg-col-primary">
+            <b>Commision Report From {{content.formPendingDate.daterange.start.formatDate('dd MMM yyyy')}} ---- {{content.formPendingDate.daterange.end.formatDate('dd MMM yyyy')}}</b>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Trans. Id</th>
+                            <th scope="col">Cr/Dr Type</th>
+                            <th scope="col">Net Amount</th>
+                            <th scope="col">Tr. Type</th>
+                            <th scope="col">Tr. Date</th>
+                            <th scope="col">Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody is="dmx-repeat" dmx-bind:repeat="content.dvAEPSCommReport.data" id="tableRepeat1" key="id">
+                        <tr>
+                            <th scope="row">{{$index+1}}</th>
+                            <td dmx-text="pay_ref_id"></td>
+                            <td dmx-text="crdr_type"></td>
+                            <td dmx-text="net_amt"></td>
+                            <td dmx-text="tr_type"></td>
+                            <td dmx-text="tr_date.formatDate('dd-MM-yyyy hh:mm:ss A')"></td>
+                            <td dmx-text="remarks"></td>
+
+                        </tr>
+                    </tbody>
+                    <tbody dmx-show="dvAEPSCommReport.data.length==0">
+                        <tr>
+                            <td colspan="14" class="h5 text-center text-danger">No Record Found!</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

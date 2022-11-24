@@ -1,0 +1,104 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "sort"
+      },
+      {
+        "type": "text",
+        "name": "dir"
+      }
+    ]
+  },
+  "exec": {
+    "steps": {
+      "name": "RecordList",
+      "module": "dbconnector",
+      "action": "select",
+      "options": {
+        "connection": "postgres_gcpServer",
+        "sql": {
+          "type": "SELECT",
+          "columns": [
+            {
+              "table": "m_recharge_plan",
+              "column": "id"
+            },
+            {
+              "table": "m_recharge_plan",
+              "column": "plan_type"
+            },
+            {
+              "table": "m_recharge_plan",
+              "column": "operator_name"
+            },
+            {
+              "table": "m_recharge_plan",
+              "column": "mrp_op_code"
+            },
+            {
+              "table": "m_recharge_plan",
+              "column": "amount"
+            },
+            {
+              "table": "m_recharge_plan",
+              "column": "status"
+            },
+            {
+              "table": "m_recharge_plan",
+              "column": "remarks"
+            },
+            {
+              "table": "m_recharge_plan",
+              "column": "created_on"
+            }
+          ],
+          "table": {
+            "name": "m_recharge_plan"
+          },
+          "primary": "id",
+          "joins": [],
+          "query": "SELECT id, plan_type, operator_name, mrp_op_code, amount, status, remarks, created_on\nFROM m_recharge_plan",
+          "params": []
+        }
+      },
+      "output": true,
+      "meta": [
+        {
+          "type": "number",
+          "name": "id"
+        },
+        {
+          "type": "text",
+          "name": "plan_type"
+        },
+        {
+          "type": "text",
+          "name": "operator_name"
+        },
+        {
+          "type": "text",
+          "name": "mrp_op_code"
+        },
+        {
+          "type": "text",
+          "name": "amount"
+        },
+        {
+          "type": "text",
+          "name": "status"
+        },
+        {
+          "type": "text",
+          "name": "remarks"
+        },
+        {
+          "type": "datetime",
+          "name": "created_on"
+        }
+      ],
+      "outputType": "array"
+    }
+  }
+}

@@ -1,0 +1,188 @@
+{
+  "meta": {
+    "$_GET": [
+      {
+        "type": "text",
+        "name": "fromdate"
+      },
+      {
+        "type": "text",
+        "name": "todate"
+      }
+    ]
+  },
+  "exec": {
+    "steps": [
+      {
+        "name": "",
+        "module": "auth",
+        "action": "restrict",
+        "options": {
+          "provider": "security",
+          "permissions": [
+            "write"
+          ],
+          "loginUrl": "/login",
+          "forbiddenUrl": "/403-forbidden"
+        }
+      },
+      {
+        "name": "identity",
+        "module": "auth",
+        "action": "identify",
+        "options": {
+          "provider": "security"
+        },
+        "output": false,
+        "meta": []
+      },
+      {
+        "name": "StatementReport",
+        "module": "dbupdater",
+        "action": "custom",
+        "options": {
+          "connection": "postgres_gcpServer",
+          "sql": {
+            "query": "select tb.pay_ref_id as order_id, trt.tr_id as ReqId, trt.user_number as Account, tb.old_balance, tb.amount, tb.netamt, tb.new_balance, tb.tr_date, tb.crdr_type, tb.pay_ref_id, tb.remarks, m_op.operator_name, trt.tr_id, trt.api_ref, trt.operator_ref as reason, ms.service_name, tb.status, trt.comm_amt, trt.charge_amt\nfrom tt_balance tb \nleft join tt_recharge_trans as trt on (trt.id = tb.pay_ref_id::int)\nINNER JOIN m_operator AS m_op ON (m_op.id = trt.op_id AND m_op.service_id = trt.service_id) \nINNER JOIN m_service AS ms ON (ms.id = trt.service_id) \nwhere tb.user_id = @user_id and tb.tr_date>= @fromdate and tb.tr_date  <= @todate ORDER BY tb.id DESC;",
+            "params": [
+              {
+                "name": "@user_id",
+                "value": "{{identity}}",
+                "test": "1"
+              },
+              {
+                "name": "@fromdate",
+                "value": "{{$_GET.fromdate}}",
+                "test": "2021-10-28 00:00:00"
+              },
+              {
+                "name": "@todate",
+                "value": "{{$_GET.todate}}",
+                "test": "2022-02-28 23:59:59.999"
+              }
+            ]
+          }
+        },
+        "output": true,
+        "meta": [],
+        "outputType": "array"
+      },
+      {
+        "name": "StatementExport",
+        "module": "dbupdater",
+        "action": "custom",
+        "options": {
+          "connection": "postgres_gcpServer",
+          "sql": {
+            "query": "select tb.pay_ref_id as order_id, trt.tr_id as ReqId, trt.user_number as Account, tb.amount, coalesce((select tb.netamt::float where tb.crdr_type='Credit'),0::float) as cr_amount,coalesce((select tb.netamt::float where tb.crdr_type='Debit'),0::float) as dr_amount, tb.old_balance, tb.new_balance, tb.tr_date, tb.crdr_type, tb.status, m_op.operator_name, trt.operator_ref as remarks, trt.comm_amt, trt.charge_amt \nfrom tt_balance tb \nleft join tt_recharge_trans as trt on (trt.id = tb.pay_ref_id::int)\nINNER JOIN m_operator AS m_op ON (m_op.id = trt.op_id AND m_op.service_id = trt.service_id) \nwhere tb.user_id = @user_id and tb.tr_date>= @fromdate and tb.tr_date  <= @todate ORDER BY tb.id ASC;",
+            "params": [
+              {
+                "name": "@user_id",
+                "value": "{{identity}}",
+                "test": "1059"
+              },
+              {
+                "name": "@fromdate",
+                "value": "{{$_GET.fromdate}}",
+                "test": "2022-09-01 00:00:00"
+              },
+              {
+                "name": "@todate",
+                "value": "{{$_GET.todate}}",
+                "test": "2022-09-28 23:59:59.999"
+              }
+            ]
+          }
+        },
+        "output": false,
+        "meta": [
+          {
+            "name": "order_id",
+            "type": "number"
+          },
+          {
+            "name": "reqid",
+            "type": "text"
+          },
+          {
+            "name": "account",
+            "type": "text"
+          },
+          {
+            "name": "amount",
+            "type": "text"
+          },
+          {
+            "name": "cr_amount",
+            "type": "number"
+          },
+          {
+            "name": "dr_amount",
+            "type": "number"
+          },
+          {
+            "name": "old_balance",
+            "type": "text"
+          },
+          {
+            "name": "new_balance",
+            "type": "text"
+          },
+          {
+            "name": "tr_date",
+            "type": "text"
+          },
+          {
+            "name": "crdr_type",
+            "type": "text"
+          },
+          {
+            "name": "status",
+            "type": "text"
+          },
+          {
+            "name": "operator_name",
+            "type": "text"
+          },
+          {
+            "name": "remarks",
+            "type": "text"
+          },
+          {
+            "name": "comm_amt",
+            "type": "text"
+          },
+          {
+            "name": "charge_amt",
+            "type": "text"
+          }
+        ],
+        "outputType": "array"
+      },
+      {
+        "name": "",
+        "module": "core",
+        "action": "condition",
+        "options": {
+          "if": "{{StatementExport}}",
+          "then": {
+            "steps": {
+              "name": "csvExport",
+              "module": "export",
+              "action": "csv",
+              "options": {
+                "path": "/public/assets/csvFile/ACStatementReport.csv",
+                "data": "{{StatementExport}}",
+                "header": true,
+                "overwrite": true
+              },
+              "outputType": "text",
+              "output": true
+            }
+          }
+        },
+        "outputType": "boolean"
+      }
+    ]
+  }
+}

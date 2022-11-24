@@ -1,0 +1,137 @@
+<!-- Wappler include fontawesome_5="cdn" bootstrap5="local" is="dmx-app" id="login" appConnect="local" -->
+<!doctype html>
+<html>
+
+<head>
+    <meta name="ac:route" content="/login">
+    <base href="/">
+    <script src="dmxAppConnect/dmxAppConnect.js"></script>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" href="assets/images/swpay.png" type="image/ico" />
+    <script src="https://kit.fontawesome.com/64d58efce2.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="./css/SignUp.css" />
+    <link rel="stylesheet" href="dmxAppConnect/dmxValidator/dmxValidator.css" />
+    <script src="dmxAppConnect/dmxValidator/dmxValidator.js" defer=""></script>
+    <script src="dmxAppConnect/dmxStateManagement/dmxStateManagement.js" defer=""></script>
+    <script src="dmxAppConnect/dmxBrowser/dmxBrowser.js" defer=""></script>
+
+    <link rel="stylesheet" href="dmxAppConnect/dmxNotifications/dmxNotifications.css" />
+    <script src="dmxAppConnect/dmxNotifications/dmxNotifications.js" defer=""></script>
+</head>
+
+
+
+<body is="dmx-app" id="login" class="container">
+
+    <dmx-session-manager id="sessionLogin"></dmx-session-manager>
+    <dmx-cookie-manager id="cookiesLogin"></dmx-cookie-manager>
+    <div is="dmx-browser" id="browser1"></div>
+    <dmx-value id="varLogin" dmx-bind:value="'Login'"></dmx-value>
+    <dmx-value id="varInvalidLogin" dmx-bind:value="0"></dmx-value>
+    <dmx-value id="varCountUser" dmx-bind:value="0"></dmx-value>
+    <dmx-notifications id="Notification" newest-on-top="true">
+
+    </dmx-notifications>
+    <div class="forms-container">
+        <div class="signin-signup">
+            <!--Sign in form-->
+            <form id="formLogin" class="sign-in-form" is="dmx-serverconnect-form" method="post" action="api/Users/login" dmx-on:success="formLogin.data.Status==202?browser1.goto('otp-verify'):browser1.goto('dashboard')" dmx-on:unauthorized="varInvalidLogin.setValue(1);formLogin.reset;" dmx-on:forbidden="Notification.danger(lastError.response)">
+                <h2 class="title">Log In</h2>
+                <div class="input-field">
+                    <i class="fas fa-user"></i>
+                    <input type="number" class="form-control" id="Mobile" name="Mobile" placeholder="6666666666">
+                </div>
+                <div class="input-field">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" class="form-control" id="" name="Password" placeholder="Password" required="" data-msg-required="Please enter your password">
+                </div>
+                <p class="mb-4 sd-fs-12 sd-fw-500 text-center text-danger mb-4" dmx-hide="!varInvalidLogin.value">Invalid email or password. Try again.
+                </p>
+                <p class="mb-4 sd-fs-12 sd-fw-500 text-center text-danger mb-4" dmx-hide="!varCountUser.value">User Already Exists. Please Try again.
+                </p>
+                <button id="submitLogin" class="btn btn-primary text-white w-100 mt-2 mb-3 solid" type="submit" dmx-bind:disabled="state.executing">LogIn<span class="spinner-border spinner-border-sm" role="status" dmx-show="state.executing"></span>
+                </button>
+                <p class="social-text">Forgot Password?&emsp;<a href="forgot-pass">Click Here</a></p>
+
+            </form>
+
+            <!--sign up form-->
+            <form is="dmx-serverconnect-form" id="formSignUp" method="post" class="sign-up-form" action="api/Users/SignUp" dmx-on:success="scNotif.success('SignUp Successful, Check Your Mobile or Whatsapp for Username and Password.');" dmx-on:unauthorized="Notification.danger('Please try again!')" dmx-on:forbidden="Notification.danger('Please try again!')">
+                <h2 class="title">Sign up</h2>
+                <p>(Signup as a Retailer)</p>
+                <div class="input-field">
+                    <i class="fas fa-user"></i>
+                    <input type="text" class="form-control" id="user_name" name="fname" placeholder="Enter user name" required="true">
+                </div>
+
+                <div class="input-field">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" class="form-control" id="Email" name="email" placeholder="Enter Email Id" required="true" autofocus="true">
+                </div>
+
+                <div class="input-field">
+                    <i class="fas fa-mobile-alt"></i>
+                    <input type="number" class="form-control" id="MobileNo" name="mobile" placeholder="10 digit Mobile Number" required="true">
+                </div>
+                <div class="input-field">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <input type="text" class="form-control" id="pin" name="pin" placeholder="Enter Area PIN" required="true">
+                </div>
+
+                <div class="input-field">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <input type="text" class="form-control" id="address" name="address" placeholder="Enter Address" required="true" autofocus="true">
+                </div>
+                <div class="alert alert-success" role="alert" dmx-show="formSignUp.data.Status" dmx-style:color="formSignUp.data.Status=='true'?'#008000':'#ff0000'">
+                    {{formSignUp.data.message}}
+                </div>
+                <input type="submit" value="Sign Up" class="btn solid">
+            </form>
+        </div>
+    </div>
+    <!-- 
+                <p class="social-text">Or Sign up with social platforms</p> -->
+    <!-- <div class="social-media">
+                    <a href="#" class="social-icon">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="social-icon">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="social-icon">
+                        <i class="fab fa-google"></i>
+                    </a>
+                    <a href="#" class="social-icon">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                </div> -->
+    <div class="panels-container">
+        <div class="panel left-panel">
+            <div class="content">
+                <h3>Don't have an account?</h3>
+                <p>Signup here to be a business partner (Master Distributor or Distributor or Retailer)</p>
+                <button class="btn transparent" id="sign-up-btn">Sign Up</button>
+            </div>
+
+            <img src="assets/images/log.svg" class="image" alt="">
+        </div>
+
+        <div class="panel right-panel">
+            <div class="content">
+                <h3>Already a member/ user?</h3>
+                <p>Login here as Master Distributor or Distributor or Retailer</p>
+                <button class="btn transparent" id="sign-in-btn">Sign in</button>
+            </div>
+
+            <img src="assets/images/register.svg" class="image" alt="">
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+
+    <script src="bootstrap/5/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

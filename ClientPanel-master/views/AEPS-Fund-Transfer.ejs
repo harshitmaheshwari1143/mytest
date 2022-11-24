@@ -1,0 +1,197 @@
+<!-- Wappler include head-page="layouts/main" fontawesome_5="cdn" bootstrap5="local" is="dmx-app" id="AEPSFundTransfer" appConnect="local" components="{dmxBootstrap5Navigation:{},dmxValidator:{},dmxBootstrap5Modal:{}}" -->
+
+<meta name="ac:route" content="/AEPS-Fund-Transfer">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<dmx-serverconnect id="scBeneficiary" url="api/AEPS/GetBeneficiary"></dmx-serverconnect>
+<dmx-serverconnect id="scBankList" url="api/DMT/GetBankList"></dmx-serverconnect>
+<div class="container-fluid">
+    <h1 class="mt-4">AEPS Fund Transfer
+        <span class="border-3 ms-2 spinner-border spinner-border-sm" role="status" dmx-show="scLoginUser.state.executing"></span>
+    </h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item active">ARPS / Retailer Id: {{scLoginUser.data.LoginUserInfo.user_id}} / Merchant Id: {{scLoginUser.data.LoginUserInfo.aeps_merchant_id}}</li>
+    </ol>
+    <div class="row mx-0">
+        <div class="col-12 col-sm-6" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 3 || scLoginUser.data.LoginUserInfo.user_type == 4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Add Beneficary (Max. Limit 5)</h5>
+                </div>
+                <div class="card-body">
+                    <form id="formAddBen" method="post" action="api/AEPS/AddBeneficiary" is="dmx-serverconnect-form" dmx-on:success="scNotif.success(content.formAddBen.data.Desc); formAddBen.reset(); scBeneficiary.load();" dmx-on:error="scNotif.warning(formAddBen.lastError.response)" dmx-on:unauthorized="scNotif.warning(formAddBen.lastError.response)" dmx-on:forbidden="scNotif.warning(formAddBen.lastError.response)" dmx-on:invalid="scNotif.warning(formAddBen.lastError.response)">
+                        <div class="row mx-0">
+                            <div class="col-12 col-sm-6">
+                                <label for="inputName" class="col-form-label">AC Holder Name</label>
+                                <input type="text" class="form-control" id="inputName" name="UserName" aria-describedby="inputName_help" required="">
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <label for="inputBankName" class="col-form-label">Bank Name</label>
+                                <select id="inputBankName" class="sw-select2 form-select fs-6 text-gray-500 w-100" name="BankName" required="" dmx-bind:options="content.scBankList.data.GetDBBanks" optiontext="bank_name.titlecase()" optionvalue="bank_name.titlecase()" required="">
+                                    <option value="">Select Bank</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <label for="inputBankAC" class="col-form-label">Bank Account No.</label>
+                                <input type="number" class="form-control" id="inputBankAC" name="BankAC" aria-describedby="inputBankAC_help" required="">
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <label for="inputBankIFSC" class="col-form-label">Bank IFSC</label>
+                                <input type="text" class="form-control" id="inputBankIFSC" name="BankIFSC" aria-describedby="inputBankIFSC_help" required="" maxlength="20">
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <label for="inputAddress" class="col-form-label">Address</label>
+                                <input type="text" class="form-control" id="inputAddress" name="Address" aria-describedby="inputAddress_help" required="" maxlength="200">
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <label for="inputPin" class="col-form-label">Area PIN</label>
+                                <input type="text" class="form-control" id="inputAreaPIN" name="AreaPIN" aria-describedby="inputAreaPIN_help" required="" maxlength="6">
+                            </div>
+                        </div>
+                        <div class="row mx-0 mt-2">
+                            <div class="col-12 col-sm-6">
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title">View Beneficary</h5>
+                </div>
+                <div class="card-body table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Beneficiary Id</th>
+                                <th scope="col">Contact</th>
+                                <th scope="col">A/C Holder Name</th>
+                                <th scope="col">Bank Name</th>
+                                <th scope="col">A/C No.</th>
+                                <th scope="col">IFSC</th>
+                                <th scope="col">Area PIN</th>
+                                <th scope="col">Address</th>
+                            </tr>
+                        </thead>
+                        <tbody is="dmx-repeat" id="tableRepeat1" dmx-bind:repeat="content.scBeneficiary.data.ViewBenef">
+                            <tr>
+                                <th scope="row">{{$index+1}}</th>
+                                <td dmx-text="benef_id"></td>
+                                <td dmx-text="benef_mobile"></td>
+                                <td dmx-text="benef_name"></td>
+                                <td dmx-text="remarks"></td>
+                                <td dmx-text="bank_ac"></td>
+                                <td dmx-text="ifsc"></td>
+                                <td dmx-text="pincode"></td>
+                                <td dmx-text="address1"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+
+        </div>
+        <div class="col-12 col-sm-6">
+            <ul class="nav nav-pills mb-3 px-2" id="pills-tab" role="tablist">
+                <li class="nav-item border sw-border-radius col-6 px-0" role="presentation">
+                    <button class="nav-link active w-100 h6 mb-0" id="pills-home-tab" data-bs-toggle="pill" data-toggle="pill" href="#pills-home" data-bs-target="#pills-home" type="button" role="tab" aria-controls="pills-home" aria-selected="true">To Wallet Transfer</button>
+                </li>
+                <li class="nav-item border sw-border-radius col-6 px-0" role="presentation" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 3 || scLoginUser.data.LoginUserInfo.user_type == 4">
+                    <button class="nav-link w-100 h6 mb-0" id="pills-profile-tab" data-toggle="pill" href="#pills-profile" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">To Bank Transfer</button>
+                </li>
+            </ul>
+            <div class="tab-content" id="pills-tabContent">
+                <div class="tab-pane fade show active px-2" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+                    <h4>Main Wallet Transfer</h4>
+                    <div class="row">
+                        <form id="formMainWallet" method="post" action="api/AEPS/WalletTransfer" is="dmx-serverconnect-form" dmx-on:success="scNotif.success(content.formMainWallet.data); formMainWallet.reset(); scLoginUser.load(); scBeneficiary.load();" dmx-on:error="scNotif.warning(formMainWallet.lastError.response)" dmx-on:unauthorized="scNotif.warning(formMainWallet.lastError.response)" dmx-on:forbidden="scNotif.warning(formMainWallet.lastError.response)" dmx-on:invalid="scNotif.warning(formMainWallet.lastError.response)">
+                            <div class="form-group mb-0">
+                                <label for="inputCurrent" class="col-form-label">Current Aeps Balance</label>
+                                <input type="text" class="form-control" id="inputCurrentBal" aria-describedby="inputName_help" required="" readonly="true" disabled="true" dmx-bind:value="scLoginUser.data.LoginUserInfo.aeps_balance">
+                            </div>
+                            <div class="form-group mb-0">
+                                <label for="inputCurrentLimit" class="col-form-label">Current Aeps Limit</label>
+                                <input type="text" class="form-control" id="inputCurrentLimit" aria-describedby="inputCurrentLimit_help" required="" readonly="true" disabled="true" dmx-bind:value="scLoginUser.data.LoginUserInfo.aeps_balance">
+                            </div>
+                            <div class="form-group mb-0">
+                                <label for="inputWithdrawLimit" class="col-form-label">Withdrawal Amount</label>
+                                <input type="number" class="form-control" id="inputWithdrawLimit" name="WithdrawLimit" aria-describedby="inputWithdrawLimit_help" required="" dmx-bind:max="content.formMainWallet.inputCurrentLimit.value">
+                            </div>
+                            <div class="col text-center mt-3"><button type="submit" class="btn btn-primary pull-left px-5" dmx-bind:disabled="state.executing" id="btnmrecharge">Submit<span class="spinner-border spinner-border-sm" role="status" dmx-show="state.executing"></span></button></div>
+
+                        </form>
+                    </div>
+                </div>
+                <div class="tab-pane fade px-2" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab" dmx-show="scLoginUser.data.LoginUserInfo.user_type == 3 || scLoginUser.data.LoginUserInfo.user_type == 4">
+                    <h4>Direct Bank Transfer</h4>
+                    <div class="row">
+                        <form id="formBankTransfer" method="post" action="api/AEPS/AEPSBankTransfer" is="dmx-serverconnect-form" dmx-on:success="scNotif.success(content.formBankTransfer.data.Resp); formBankTransfer.reset(); scLoginUser.load();scBeneficiary.load(); modalResponse.show();" dmx-on:error="scNotif.warning(formBankTransfer.lastError.response)" dmx-on:unauthorized="scNotif.warning(formBankTransfer.lastError.response)" dmx-on:forbidden="scNotif.warning(formBankTransfer.lastError.response)" dmx-on:invalid="scNotif.warning(formBankTransfer.lastError.response)">
+                            <div class="form-group mb-0">
+                                <label for="inputCurrentBank" class="col-form-label">Current Aeps Balance</label>
+                                <input type="text" class="form-control" id="inputCurrentBalBank" aria-describedby="inputNamebank_help" required="" readonly="true" disabled="true" dmx-bind:value="scLoginUser.data.LoginUserInfo.aeps_balance">
+                            </div>
+                            <div class="form-group mb-0">
+                                <label for="inputCurrentLimitBank" class="col-form-label">Current Aeps Limit</label>
+                                <input type="text" class="form-control" id="inputCurrentLimitBank" aria-describedby="inputCurrentLimitbank_help" required="" readonly="true" disabled="true" dmx-bind:value="scLoginUser.data.LoginUserInfo.aeps_balance">
+                            </div>
+                            <!-- content.scBeneficiary.data.aeps_balance.toFixed(2) -->
+                            <div class="form-group mb-0">
+                                <label for="inputSelectBank" class="col-form-label">Select Beneficiary</label>
+                                <select type="text" class="form-control form-select" id="inputSelectBank" name="BenefIdBank" aria-describedby="inputSelectBank_help" required="" dmx-bind:options="content.scBeneficiary.data.ViewBenef" optiontext="benef_name" optionvalue="benef_id">
+                                    <option value="">Select</option>
+                                </select>
+                            </div>
+                            <div class="form-group mb-0">
+                                <label for="inputWithdrawLimitBank" class="col-form-label">Withdrawal Amount</label>
+                                <input type="number" class="form-control" id="inputWithdrawAmtBank" name="WithdrawAmtBank" aria-describedby="inputWithdrawLimitBank_help" required="" dmx-bind:max="content.formBankTransfer.inputCurrentLimitBank.value">
+                            </div>
+                            <div class="form-group mb-0">
+                                <label for="inputWithdrawTPIN" class="col-form-label">T-Pin</label>
+                                <input type="number" class="form-control" id="inputWithdrawTPIN" name="WithdrawTPIN" aria-describedby="inputWithdrawTPIN_help" required="">
+                            </div>
+                            <div class="col text-center mt-3"><button type="submit" class="btn btn-primary pull-left px-5" dmx-bind:disabled="state.executing" id="btnBankTrans">Submit<span class="spinner-border spinner-border-sm" role="status" dmx-show="state.executing"></span></button></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+<div class="modal fade" id="modalResponse" is="dmx-bs5-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Transaction Response</h5>
+                <button type="button" class="close btn-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="col-12 text-center">
+                    <img src="assets/images/mark-success.gif" width="200" height="200" class="img-fluid" dmx-show="content.formBankTransfer.data.Status == 'SUCCESS' || content.formBankTransfer.data.Status == 'PENDING'">
+                    <img src="assets/images/mark-failure.gif" width="200" height="200" class="img-fluid" dmx-show="content.formBankTransfer.data.Status == 'FAILED'">
+                </div>
+                <h5 dmx-show="content.formBankTransfer.lastError.status == 'true'">Status:<b class="text-danger">{{content.formBankTransfer.lastError.message}} {{content.formBankTransfer.lastError.response}}</b></h5>
+                <h5 dmx-show="content.formBankTransfer.lastError.status== 0">Status: <span dmx-class:text-danger="content.formBankTransfer.data.Status=='FAILED'" dmx-class:text-success="content.formBankTransfer.data.Status=='SUCCESS'||content.formBankTransfer.data.Status=='PENDING'">{{content.formBankTransfer.data.Status}}</span>
+                </h5>
+                <h5>Amount: {{content.formBankTransfer.data.Amount}}/-</h5>
+                <h6>Account No.: {{content.formBankTransfer.data.ac_no}}</h6>
+                <h6>Benef. Bank: {{content.formBankTransfer.data.bank_name}}</h6>
+                <h6>Beneficiary Name.: {{content.formBankTransfer.data.benef_name}}</h6>
+                <!-- Ref ID -->
+                <h6>Transaction Ref.: {{content.formBankTransfer.data.api_ref}}</h6>
+                <h6>Remarks: {{content.formBankTransfer.data.Remarks}}</h6>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary close" data-bs-dismiss="modal" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var $disabledResults = $("#inputBankName");
+    $disabledResults.select2();
+</script>
